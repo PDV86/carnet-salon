@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Carnet du salon</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Carnet">
+<meta name="theme-color" content="#500E19">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Josefin+Sans:wght@300;400;600;700&display=swap">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout : liste des couples à gauche, fiche du couple à droite ; sur téléphone, la fiche s'ouvre à la place de la liste. */
+:root {
+  /* Charte Pépites de Vin : vin #500e19, brique #8d4535, rosés #bc8e86 #d3b0ab #eadcd8, champagne #f4ebdf, vert bouteille #183300, or #fab03b */
+  --bg: #FAF6EF; --surface: #FFFFFF; --sunk: #F4EBDF; --fg: #2B1318; --muted: #76655F; --line: #E9DDCB;
+  --accent: #500E19; --accent-ink: #F4EBDF; --accent-soft: #F1E3E0; --gold: #FAB03B; --ok: #183300; --ok-soft: #E5EBDD; --danger: #A3242E;
+  --display: "Cormorant Garamond", "Carlton Std", Georgia, "Times New Roman", serif;
+  --body: "Josefin Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #140B0D; --surface: #1E1315; --sunk: #281A1D; --fg: #F4EBDF; --muted: #B9A79F; --line: #3C2A2D;
+    --accent: #D3B0AB; --accent-ink: #2B1318; --accent-soft: #3A2427; --gold: #FAB03B; --ok: #A9C58F; --ok-soft: #1F2A18; --danger: #F08A92;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #140B0D; --surface: #1E1315; --sunk: #281A1D; --fg: #F4EBDF; --muted: #B9A79F; --line: #3C2A2D;
+  --accent: #D3B0AB; --accent-ink: #2B1318; --accent-soft: #3A2427; --gold: #FAB03B; --ok: #A9C58F; --ok-soft: #1F2A18; --danger: #F08A92;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+header { border-bottom: 1px solid var(--gold); padding-bottom: 12px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 16px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 4vw, 34px); line-height: 1.1; margin: 4px 0 0; }
+.stats { display: flex; gap: 18px; align-items: end; font-variant-numeric: tabular-nums; }
+.stat b { display: block; font-family: var(--display); font-weight: 600; font-size: 30px; line-height: 1; color: var(--accent); }
+.stat span { font-size: 12.5px; color: var(--muted); }
+.status { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.dot.on { background: var(--ok); } .dot.warn { background: var(--danger); }
+.banner { font-size: 13.5px; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); }
+
+.grid { display: grid; gap: 18px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 920px) {
+  .grid { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); }
+  .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); display: flex; flex-direction: column; }
+  .side .list { overflow-y: auto; }
+  .back { display: none !important; }
+}
+@media (max-width: 919px) {
+  body.open .side { display: none; }
+  body:not(.open) .main { display: none; }
+}
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.side { gap: 10px; min-width: 0; }
+.side .head { display: flex; gap: 8px; flex-wrap: wrap; }
+.side .head input { flex: 1 1 160px; }
+.list { display: grid; }
+.crow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 11px 14px; border: 0; border-top: 1px solid var(--line); background: none; border-radius: 0; text-align: left; width: 100%; font-weight: 400; cursor: pointer; color: var(--fg); }
+.crow:first-child { border-top: 0; }
+.crow:hover { background: var(--sunk); }
+.crow.sel { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.crow .n { font-weight: 600; overflow-wrap: anywhere; }
+.crow .l { font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
+.dots { display: flex; gap: 4px; margin-top: 4px; }
+.cdot { width: 11px; height: 11px; border-radius: 50%; background: var(--cc); box-shadow: inset 0 0 0 1px var(--band); }
+.chip { font-size: 11.5px; font-weight: 700; letter-spacing: .03em; padding: 3px 8px; border-radius: 99px; white-space: nowrap; background: var(--sunk); color: var(--muted); }
+.chip.done { background: var(--ok-soft); color: var(--ok); }
+.empty { padding: 22px 16px; color: var(--muted); text-align: center; font-size: 14.5px; }
+.empty strong { display: block; color: var(--fg); font-family: var(--display); font-weight: 400; font-size: 18px; margin-bottom: 4px; }
+
+input, textarea, select {
+  font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 11px; width: 100%; min-width: 0;
+}
+select { appearance: none; -webkit-appearance: none; padding-right: 30px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+select.set { border-color: var(--accent); background-color: var(--accent-soft); font-weight: 600; }
+textarea { resize: vertical; min-height: 70px; }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 9px 13px; font-weight: 600; font-size: 14.5px; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.ghost { background: transparent; }
+button.small { padding: 6px 10px; font-size: 13px; }
+button.x { border: 0; background: none; color: var(--muted); padding: 6px 8px; font-size: 18px; line-height: 1; }
+button.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+
+.main { padding: 18px; display: grid; gap: 22px; min-width: 0; }
+.fhead { display: flex; gap: 10px; align-items: start; justify-content: space-between; flex-wrap: wrap; }
+.fhead h2 { font-family: var(--display); font-weight: 600; font-size: clamp(22px, 3.4vw, 28px); line-height: 1.15; margin: 0; overflow-wrap: anywhere; }
+.fhead .lieu { color: var(--muted); margin-top: 2px; }
+.fhead .fdate { color: var(--muted); font-size: 14px; }
+.fhead .lieu::before { content: "⌖ "; color: var(--accent); }
+.saved { font-size: 12.5px; color: var(--muted); }
+.ident { padding: 14px; border-radius: 12px; background: var(--sunk); border: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; margin-top: -6px; position: sticky; top: env(safe-area-inset-top, 0px); background: var(--surface); z-index: 5; }
+.tab { border: 0; border-radius: 0; background: none; padding: 10px 12px 9px; font-size: 15px; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.tab.on { color: var(--fg); border-bottom-color: var(--accent); }
+.tab .badge { font-size: 11.5px; min-width: 20px; padding: 1px 6px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-variant-numeric: tabular-nums; }
+.tabpanel { display: grid; gap: 22px; }
+section.blk { display: grid; gap: 12px; }
+section.blk > h3 { margin: 0; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+section.blk > h3 small { text-transform: none; letter-spacing: 0; color: var(--muted); font-weight: 500; font-size: 13px; }
+.cols { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+label.f { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 500; min-width: 0; }
+
+.moments { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mrow { display: grid; grid-template-columns: minmax(0, 1fr) 150px 96px; gap: 8px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); background: var(--surface); }
+.mrow:first-child { border-top: 0; }
+.mrow .mn { font-weight: 600; font-size: 15px; }
+.mrow .mn small { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.mrow select, .mrow input { padding: 8px 10px; }
+.mrow select { padding-right: 28px; }
+.mrow input.auto { color: var(--muted); }
+.mrow.mrow4 { grid-template-columns: minmax(0, 1fr) 150px 96px 40px; }
+.mrm { width: 40px; height: 38px; padding: 0; font-size: 22px; line-height: 1; color: var(--muted); }
+.mrm:hover { color: var(--danger); border-color: var(--danger); }
+@media (max-width: 480px) { .mrow.mrow4 { grid-template-columns: minmax(0, 1fr) 108px 62px 36px; } .mrm { width: 36px; } }
+@media (max-width: 480px) { .mrow { grid-template-columns: minmax(0, 1fr) 118px 70px; gap: 6px; padding: 8px; } .mrow .mn { font-size: 14px; } }
+
+.catbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pill { display: inline-flex; align-items: center; gap: 7px; border-radius: 99px; padding: 7px 12px 6px; font-size: 14px; font-weight: 600; background: var(--surface); border: 1px solid var(--line); color: var(--fg); }
+.pill .sw { width: 12px; height: 12px; border-radius: 50%; background: var(--cc); box-shadow: inset 0 0 0 1px var(--band); flex: none; }
+.pill.on { background: var(--cc); color: var(--ink); border-color: var(--band); }
+.pill.on .sw { box-shadow: 0 0 0 2px var(--ink); }
+.pill .n { font-size: 12px; opacity: .8; font-variant-numeric: tabular-nums; }
+.vf { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-left: auto; }
+.vf button { border: 0; border-radius: 0; padding: 7px 11px 6px; font-size: 13.5px; background: var(--surface); color: var(--muted); }
+.vf button.on { background: var(--accent); color: var(--accent-ink); }
+.catsec { display: grid; gap: 8px; }
+.bottles { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
+.btl { position: relative; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; min-width: 0; box-shadow: inset 0 -4px 0 var(--band); }
+.btl .btap { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; border: 0; border-radius: 0; background: none; text-align: left; padding: 10px 10px 14px; font-weight: 400; color: var(--fg); min-height: 128px; }
+.bimg { width: 40px; height: 110px; object-fit: contain; }
+.nob { display: block; width: 14px; height: 70px; margin: 0 auto; border-radius: 6px 6px 3px 3px; background: var(--cc); box-shadow: inset 0 0 0 1px var(--band); }
+.btl .dom { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; overflow-wrap: anywhere; }
+.btl .cuv { display: block; font-family: var(--display); font-size: 18px; font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; margin-top: 2px; }
+.btl .px { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.btl.on .px { color: var(--fg); }
+.tarifs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tarifs .vf { margin-left: 0; }
+.regs { display: flex; flex-wrap: wrap; gap: 6px; }
+.reg { border-radius: 99px; padding: 6px 11px 4px; font-size: 13px; font-weight: 600; background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.reg.on { background: var(--cc); color: var(--ink); border-color: var(--band); }
+.regh { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; font-family: var(--display); font-size: 18px; font-weight: 600; color: var(--fg); border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+.regh small { font-family: var(--body); font-size: 12px; color: var(--muted); font-weight: 600; }
+.btl .chk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--line); color: var(--muted); font-size: 17px; font-weight: 700; }
+.btl.on { border-color: var(--band); background: color-mix(in srgb, var(--cc) 22%, var(--surface)); box-shadow: inset 0 -4px 0 var(--band), 0 0 0 1px var(--band); }
+.btl.on .chk { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.fiche { position: absolute; right: 8px; bottom: 9px; font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: none; padding: 2px 6px; border-radius: 6px; background: var(--surface); }
+.fiche:hover { text-decoration: underline; }
+.gobar { position: sticky; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; z-index: 4; }
+.gobar .primary { padding: 13px 20px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.18); border-radius: 99px; }
+.progress { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; font-size: 14px; color: var(--muted); }
+.progress b { color: var(--fg); font-size: 18px; }
+.progress .bar { height: 6px; border-radius: 99px; background: var(--sunk); overflow: hidden; }
+.progress .bar i { display: block; height: 100%; background: var(--gold); }
+.tcard { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 14px; padding: 14px; border: 1px solid var(--line); border-left: 6px solid var(--band); border-radius: 14px; background: var(--surface); }
+.tcard.noted { background: color-mix(in srgb, var(--cc) 12%, var(--surface)); }
+.tcard.coeur { box-shadow: 0 0 0 2px var(--gold); }
+.timg { width: 52px; height: 150px; object-fit: contain; }
+.tcard .nob { height: 90px; width: 18px; }
+.tmain { display: grid; gap: 10px; min-width: 0; }
+.thead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.ttag { display: inline-block; background: var(--cc); color: var(--ink); border: 1px solid var(--band); border-radius: 6px; padding: 2px 8px 0; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.tcard .dom { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-top: 6px; }
+.tcard .cuv { font-family: var(--display); font-size: 22px; font-weight: 600; line-height: 1.1; overflow-wrap: anywhere; }
+.tact { display: flex; gap: 4px; align-items: center; }
+.tact .fiche { position: static; }
+.tcard .star { border: 0; background: none; font-size: 24px; padding: 2px 6px; color: var(--muted); }
+.tcard .star.on { color: var(--gold); }
+.tcard .faces { flex-wrap: wrap; }
+.tcard .face { width: auto; height: auto; padding: 6px 10px 4px; display: grid; justify-items: center; gap: 2px; font-size: 26px; min-width: 70px; }
+.tcard .face span { font-size: 11px; font-weight: 600; color: var(--muted); filter: none; }
+.tcard .wrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.tcard .wrow input { flex: 1 1 240px; }
+.mchips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.mchips .hint { margin-right: 4px; }
+.mchip { border-radius: 99px; padding: 7px 12px 5px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.mchip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.tcard .wrow select { flex: 0 1 210px; }
+.tcard .rm { font-size: 12.5px; color: var(--muted); background: none; border: 0; padding: 2px 0; text-decoration: underline; justify-self: start; }
+@media (max-width: 480px) { .tcard { grid-template-columns: 40px minmax(0, 1fr); gap: 10px; padding: 12px; } .timg { width: 40px; height: 120px; } .tcard .face { min-width: 0; flex: 1 1 0; } }
+.cath { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; }
+.cath .tag { background: var(--cc); color: var(--ink); border: 1px solid var(--band); border-radius: 8px; padding: 5px 12px 3px; font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 1.2; }
+.cath small { color: var(--muted); font-size: 13px; }
+.wines { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.wine { display: grid; border: 1px solid var(--line); border-left: 6px solid var(--band); border-radius: 10px; background: var(--surface); overflow: hidden; min-width: 0; }
+.wine .wtap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 0; border-radius: 0; background: none; text-align: left; padding: 10px 6px 9px 11px; font-weight: 400; color: var(--fg); min-height: 58px; }
+.wine .dom { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; overflow-wrap: anywhere; }
+.wine .cuv { display: block; font-family: var(--display); font-size: 18px; font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; }
+.wine .st { font-size: 22px; line-height: 1; color: var(--muted); }
+.wine .head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; }
+.wine .star { border: 0; border-radius: 0; background: none; font-size: 22px; padding: 0 12px; color: var(--muted); }
+.wine .star.on { color: var(--gold); }
+.wine.tasted { grid-column: 1 / -1; border-color: var(--band); background: color-mix(in srgb, var(--cc) 13%, var(--surface)); }
+.wine.tasted .head { background: var(--cc); }
+.wine.tasted .wtap, .wine.tasted .dom, .wine.tasted .st, .wine.tasted .star:not(.on) { color: var(--ink); }
+.wine.tasted .dom { opacity: .85; }
+.wine.kept:not(.tasted) { background: color-mix(in srgb, var(--gold) 12%, var(--surface)); }
+.wine .wbody { display: grid; gap: 8px; padding: 10px 11px 11px; }
+.wine .wrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.wine .wrow input { flex: 1 1 220px; }
+.wine .wrow select { flex: 0 1 200px; }
+.wine .rm { font-size: 12.5px; color: var(--muted); background: none; border: 0; padding: 4px 0; text-decoration: underline; justify-self: start; }
+.addother { display: flex; gap: 8px; }
+.addother input { font-size: 15px; padding: 8px 10px; }
+.legend { font-size: 13px; color: var(--muted); }
+.picker { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 8px; }
+.picker .other { grid-column: 1 / -1; display: flex; gap: 8px; }
+@media (max-width: 480px) { .picker { grid-template-columns: 1fr; } }
+.items { display: grid; gap: 8px; }
+.item { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.item .top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.item .ref { font-weight: 600; overflow-wrap: anywhere; }
+.item .cat { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.item .row2 { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; }
+@media (max-width: 560px) { .item .row2 { grid-template-columns: 1fr; } }
+.faces { display: flex; gap: 4px; }
+.face { width: 48px; height: 44px; padding: 0; font-size: 22px; border-radius: 10px; background: var(--bg); filter: grayscale(1); opacity: .55; }
+.face.on { filter: none; opacity: 1; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.item.coeur { border-color: var(--accent); }
+.item input, .item select { padding: 8px 10px; font-size: 15px; }
+.none { color: var(--muted); font-size: 14px; padding: 4px 2px; }
+
+.tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.import { padding: 14px; display: grid; gap: 10px; }
+.import textarea { min-height: 110px; font-size: 14px; }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+.copybox { min-height: 110px; font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: 14px; z-index: 20; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: no-preference) { .toast { animation: rise .18s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Pépites de Vin · Salon du mariage</div>
+      <h1>Carnet des dégustations</h1>
+    </div>
+    <div style="display:grid;gap:6px;justify-items:end">
+      <div class="stats">
+        <div class="stat"><b id="sDone">0</b><span>dégustés</span></div>
+        <div class="stat"><b id="sAll">0</b><span>couples attendus</span></div>
+      </div>
+      <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">Connexion…</span></div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <div class="grid">
+    <aside class="side">
+      <div class="head">
+        <input id="search" type="search" placeholder="Rechercher un couple, un lieu…" aria-label="Rechercher">
+        <select id="filter" aria-label="Filtrer" style="flex:0 0 130px">
+          <option value="all">Tous</option><option value="todo">À recevoir</option><option value="done">Dégustés</option>
+        </select>
+      </div>
+      <div class="panel list" id="list"></div>
+      <div class="tools">
+        <button type="button" id="addBtn">+ Couple</button>
+        <button type="button" id="importBtn">Importer la liste</button>
+        <button type="button" id="exportBtn">Exporter</button>
+        <button type="button" id="copyBtn">Copier</button>
+      </div>
+      <div class="panel import" id="importZone" hidden>
+        <strong>Coller la liste des couples</strong>
+        <p class="hint">Copiez les lignes depuis Excel ou Google Sheets, une ligne par couple, dans cet ordre : Prénom 1 · Nom 1 · Prénom 2 · Nom 2 · Lieu de réception · Date du mariage (facultative). Une ligne d'en-tête est ignorée.</p>
+        <textarea id="importText" placeholder="Camille	MARTIN	Hugo	BERNARD	Château de la Croë	2027-06-12"></textarea>
+        <div class="tools"><button type="button" class="primary" id="importGo">Importer</button><button type="button" class="ghost" id="importCancel">Fermer</button></div>
+      </div>
+      <div id="copyZone" class="panel import" hidden>
+        <p class="hint">Copie automatique refusée par cet appareil : sélectionnez le texte et copiez-le.</p>
+        <textarea class="copybox" id="copyBox" readonly></textarea>
+      </div>
+    </aside>
+
+    <main class="panel main" id="main">
+      <div class="empty"><strong>Choisissez un couple</strong>Importez la liste des couples attendus, puis touchez un nom pour ouvrir sa fiche de dégustation.</div>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="thumbs.js"></script>
+<script>
+(function () {
+  // ---------- Catalogue 2027 (Google Sheet « Catalogue 2027 v1 ») ----------
+  const FICHES_URL = "https://pdv86.github.io/fiches-degustation/";
+  const WINES = [{"n": 1, "cat": "Champagne", "dom": "Jean Duclert", "cuv": "Cuvée Harmonie Brut", "reg": "Champagne", "prix": ["24", "26,50", "27,50"]}, {"n": 2, "cat": "Champagne", "dom": "Lebeau Batiste", "cuv": "Brut Tradition", "reg": "Champagne", "prix": ["27", "30", "30,50"]}, {"n": 3, "cat": "Champagne", "dom": "Dominé", "cuv": "Brut Premier Cru", "reg": "Champagne", "prix": ["28", "31", "32"]}, {"n": 4, "cat": "Champagne", "dom": "Lebeau Batiste", "cuv": "Terre de Chardonnay (Blanc de Blancs)", "reg": "Champagne", "prix": ["35", "39", "40"]}, {"n": 5, "cat": "Champagne", "dom": "Collet", "cuv": "Cuvée Brut", "reg": "Champagne", "prix": ["35", "39", "40"]}, {"n": 6, "cat": "Champagne", "dom": "Champagne Drappier", "cuv": "Carte d'Or Brut", "reg": "Champagne", "prix": ["37", "41", "42"]}, {"n": 7, "cat": "Champagne", "dom": "Champagne Drappier", "cuv": "Brut Nature Zéro Dosage", "reg": "Champagne", "prix": ["42", "46,50", "47,50"]}, {"n": 8, "cat": "Champagne", "dom": "Laurent Perrier", "cuv": "La Cuvée - Brut", "reg": "Champagne", "prix": ["43", "48", "49"]}, {"n": 9, "cat": "Champagne", "dom": "Taittinger", "cuv": "Brut Prestige", "reg": "Champagne", "prix": ["47", "52", "53,50"]}, {"n": 10, "cat": "Bulles", "dom": "Bailly Lapierre", "cuv": "Crémant de Bourgogne Réserve Brut", "reg": "Bourgogne", "prix": ["14", "15,50", "16"]}, {"n": 11, "cat": "Bulles", "dom": "Corvezzo", "cuv": "Prosecco Extra Dry", "reg": "Italie", "prix": ["11,50", "13", "13"]}, {"n": 12, "cat": "Bulles", "dom": "Dumnacus", "cuv": "Crémant de Loire « Feuille d'Or »", "reg": "Loire", "prix": ["15", "16,50", "17"]}, {"n": 13, "cat": "Rosé", "dom": "Domaine Sainte Philomène", "cuv": "Coteaux d'Aix-en-Provence « Philippine »", "reg": "Provence", "prix": ["9", "10", "10"]}, {"n": 14, "cat": "Rosé", "dom": "Domaine Figuière", "cuv": "Méditerranée Rosé", "reg": "Provence", "prix": ["12", "13,50", "13,50"]}, {"n": 15, "cat": "Rosé", "dom": "Château de Roquefort", "cuv": "Côtes de Provence « Corail »", "reg": "Provence", "prix": ["15", "16,50", "17"]}, {"n": 16, "cat": "Rosé", "dom": "Domaine Figuière", "cuv": "Côtes de Provence - Première Rosé", "reg": "Provence", "prix": ["17", "19", "19,50"]}, {"n": 17, "cat": "Rosé", "dom": "Château Miraval", "cuv": "Côtes de Provence", "reg": "Provence", "prix": ["20", "22", "22,50"]}, {"n": 18, "cat": "Rosé", "dom": "Clos Cibonne", "cuv": "Tradition Rosé - Cru Classé", "reg": "Provence", "prix": ["27", "30", "30,50"]}, {"n": 19, "cat": "Rouge", "dom": "Domaine Fontalognier", "cuv": "Morgon", "reg": "Beaujolais", "prix": ["13", "14,50", "15"]}, {"n": 20, "cat": "Rouge", "dom": "Domaine Louis Claude Desvignes", "cuv": "Morgon Corcelette", "reg": "Beaujolais", "prix": ["21", "23,50", "24"]}, {"n": 21, "cat": "Rouge", "dom": "Château Fleur Haut Gaussens", "cuv": "Bordeaux Supérieur", "reg": "Bordeaux", "prix": ["11,50", "13", "13"]}, {"n": 22, "cat": "Rouge", "dom": "Les Charmes de Grand Corbin", "cuv": "Saint-Émilion Grand Cru « Les Charmes »", "reg": "Bordeaux", "prix": ["22", "24,50", "25"]}, {"n": 23, "cat": "Rouge", "dom": "Domaine de la Creuze Noire", "cuv": "Coteaux Bourguignons - Les Champs de Voisin", "reg": "Bourgogne", "prix": ["11,50", "13", "13"]}, {"n": 24, "cat": "Rouge", "dom": "Domaine La Renarde", "cuv": "Bourgogne - Les Corbaisons", "reg": "Bourgogne", "prix": ["16", "18", "18"]}, {"n": 25, "cat": "Rouge", "dom": "Domaine Tupinier Bautista", "cuv": "Mercurey vieilles vignes", "reg": "Bourgogne", "prix": ["30", "33,50", "34"]}, {"n": 26, "cat": "Rouge", "dom": "Domaine Françoise André", "cuv": "Chorey-lès-Beaune Tue-Bœuf", "reg": "Bourgogne", "prix": ["30", "33,50", "34"]}, {"n": 27, "cat": "Rouge", "dom": "Mas Costeplane", "cuv": "Languedoc « Arboussède 1850 »", "reg": "Languedoc", "prix": ["12", "13,50", "13,50"]}, {"n": 28, "cat": "Rouge", "dom": "Clos des Augustins", "cuv": "Pic Saint Loup - Le Gamin", "reg": "Languedoc", "prix": ["18", "20", "20,50"]}, {"n": 29, "cat": "Rouge", "dom": "Clos Maurice", "cuv": "Saumur-Champigny « Volage »", "reg": "Loire", "prix": ["14", "15,50", "16"]}, {"n": 30, "cat": "Rouge", "dom": "Château La Dorgonne", "cuv": "Luberon", "reg": "Provence", "prix": ["14", "15,50", "16"]}, {"n": 31, "cat": "Rouge", "dom": "Château Revelette", "cuv": "Coteaux d'Aix-en-Provence", "reg": "Provence", "prix": ["16", "18", "18"]}, {"n": 32, "cat": "Rouge", "dom": "Domaine Raspail Ay", "cuv": "Gigondas", "reg": "Vallée du Rhône", "prix": ["26", "29", "29,50"]}, {"n": 33, "cat": "Rouge", "dom": "Domaine Tempier", "cuv": "Bandol - Lulu & Lucien", "reg": "Provence", "prix": ["42", "46,50", "47,50"]}, {"n": 34, "cat": "Rouge", "dom": "Domaine Gramiller", "cuv": "Cœur de Raisin", "reg": "Vallée du Rhône", "prix": ["9", "10", "10"]}, {"n": 35, "cat": "Rouge", "dom": "Domaine de la Solitude", "cuv": "Côtes-du-Rhône", "reg": "Vallée du Rhône", "prix": ["13", "14,50", "15"]}, {"n": 36, "cat": "Rouge", "dom": "Domaine Gerin", "cuv": "Syrah La Champine", "reg": "Vallée du Rhône", "prix": ["15", "16,50", "17"]}, {"n": 37, "cat": "Rouge", "dom": "Domaine Montvac", "cuv": "Vacqueyras - Arabesque", "reg": "Vallée du Rhône", "prix": ["17", "19", "19,50"]}, {"n": 38, "cat": "Rouge", "dom": "Domaine de la Mordorée", "cuv": "Lirac « La Dame Rousse »", "reg": "Vallée du Rhône", "prix": ["18", "20", "20,50"]}, {"n": 39, "cat": "Rouge", "dom": "Domaine Ferraton", "cuv": "Crozes-Hermitage « La Matinière »", "reg": "Vallée du Rhône", "prix": ["19", "21", "21,50"]}, {"n": 40, "cat": "Rouge", "dom": "Raymond Usseglio", "cuv": "Châteauneuf-du-Pape « Tradition »", "reg": "Vallée du Rhône", "prix": ["36", "40", "41"]}, {"n": 41, "cat": "Blanc", "dom": "Domaine de la Creuze Noire", "cuv": "Mâcon-Villages", "reg": "Bourgogne", "prix": ["13,50", "15", "15,50"]}, {"n": 42, "cat": "Blanc", "dom": "Christophe Patrice", "cuv": "Petit Chablis", "reg": "Bourgogne", "prix": ["16", "18", "18"]}, {"n": 43, "cat": "Blanc", "dom": "Domaine de la Creuze Noire", "cuv": "Saint-Véran « Les Carrales »", "reg": "Bourgogne", "prix": ["20", "22", "22,50"]}, {"n": 44, "cat": "Blanc", "dom": "Domaine Françoise André", "cuv": "Pernand-Vergelesses « Les Pins »", "reg": "Bourgogne", "prix": ["34", "38", "38,50"]}, {"n": 45, "cat": "Blanc", "dom": "Domaine Françoise André", "cuv": "Savigny-lès-Beaune 1er Cru « Les Vergelesses »", "reg": "Bourgogne", "prix": ["45", "50", "51"]}, {"n": 46, "cat": "Blanc", "dom": "Domaine de la Croix Gratiot", "cuv": "Picpoul de Pinet - Syndical", "reg": "Languedoc", "prix": ["12", "13,50", "13,50"]}, {"n": 47, "cat": "Blanc", "dom": "Mas Costeplane", "cuv": "Pioch de l'Oule", "reg": "Languedoc", "prix": ["17", "19", "19,50"]}, {"n": 48, "cat": "Blanc", "dom": "Pierre Angier", "cuv": "Touraine « Les Lunelus »", "reg": "Loire", "prix": ["9", "10", "10"]}, {"n": 49, "cat": "Blanc", "dom": "Domaine de l'Épineau", "cuv": "Côteaux-du-Giennois « Forcément »", "reg": "Loire", "prix": ["12", "13,50", "13,50"]}, {"n": 50, "cat": "Blanc", "dom": "Domaine de l'Épineau", "cuv": "Pouilly-Fumé", "reg": "Loire", "prix": ["17", "19", "19,50"]}, {"n": 51, "cat": "Blanc", "dom": "Domaine du Haut Fourneau", "cuv": "Vouvray - Terres mêlées", "reg": "Loire", "prix": ["18", "20", "20,50"]}, {"n": 52, "cat": "Blanc", "dom": "Serge Laloue", "cuv": "Sancerre", "reg": "Loire", "prix": ["23", "25,50", "26"]}, {"n": 53, "cat": "Blanc", "dom": "Grange Tiphaine", "cuv": "Montlouis-sur-Loire - Clef de Sol", "reg": "Loire", "prix": ["25", "28", "28,50"]}, {"n": 54, "cat": "Blanc", "dom": "Domaine Laffitte", "cuv": "Colombard & Sauvignon", "reg": "Sud-Ouest", "prix": ["8", "9", "9"]}, {"n": 55, "cat": "Blanc", "dom": "Domaines des Masques", "cuv": "Essentielle Blanc", "reg": "Provence", "prix": ["12", "13,50", "13,50"]}, {"n": 56, "cat": "Blanc", "dom": "Château de Roquefort", "cuv": "Petit Salé", "reg": "Provence", "prix": ["15", "16,50", "17"]}, {"n": 57, "cat": "Blanc", "dom": "Château Revelette", "cuv": "Coteaux d'Aix-en-Provence", "reg": "Provence", "prix": ["16", "18", "18"]}, {"n": 58, "cat": "Blanc", "dom": "Clos Sainte Magdeleine", "cuv": "Cassis", "reg": "Provence", "prix": ["27", "30", "30,50"]}, {"n": 59, "cat": "Blanc", "dom": "Stéphane Usseglio", "cuv": "Les Amandiers Blanc", "reg": "Vallée du Rhône", "prix": ["11,50", "13", "13"]}, {"n": 60, "cat": "Blanc", "dom": "Domaine Gramiller", "cuv": "Rêve Blanc", "reg": "Vallée du Rhône", "prix": ["14", "15,50", "16"]}, {"n": 61, "cat": "Blanc", "dom": "Domaine de Lorient", "cuv": "Saint-Péray", "reg": "Vallée du Rhône", "prix": ["28", "31", "32"]}];
+  const BEERS = ["1664 — Bière blonde", "1664 — 0.0° sans alcool", "Peroni — Nastro Azzurro", "Zoumaï — Tiboulen, blonde de Provence", "Zoumaï — Maïre, IPA de Provence", "Zoumaï — Gaby, blanche de Provence"];
+  const META = new Map();
+  WINES.forEach((w) => META.set(w.dom + " — " + w.cuv, w));
+  const CATALOGUE = {};
+  WINES.forEach((w) => { (CATALOGUE[w.cat] = CATALOGUE[w.cat] || []).push(w.dom + " — " + w.cuv); });
+  CATALOGUE["Bières"] = BEERS;
+  const thumbOf = (ref) => { const m = META.get(ref); return m && window.THUMBS ? window.THUMBS[m.n] || "" : ""; };
+  const ficheOf = (ref) => { const m = META.get(ref); return m ? FICHES_URL + "#w" + m.n : ""; };
+  const CATCOL = {
+    "Champagne": { cc: "#F4EBDF", band: "#FAB03B", ink: "#500E19" },
+    "Bulles": { cc: "#FAB03B", band: "#FAB03B", ink: "#183300" },
+    "Blanc": { cc: "#183300", band: "#183300", ink: "#F4EBDF" },
+    "Rosé": { cc: "#BC8E86", band: "#BC8E86", ink: "#500E19" },
+    "Rouge": { cc: "#500E19", band: "#500E19", ink: "#F4EBDF" },
+    "Bières": { cc: "#8D4535", band: "#8D4535", ink: "#F4EBDF" },
+    "Spiritueux": { cc: "#8D4535", band: "#8D4535", ink: "#F4EBDF" },
+    "Autre": { cc: "#D3B0AB", band: "#BC8E86", ink: "#500E19" }
+  };
+  const SPRIX = ["", "Moins de 25 €", "25 – 35 €", "35 – 50 €", "50 – 70 €", "Plus de 70 €"];
+  const SPIRIT_TYPES = ["Gin", "Vodka", "Whisky", "Bourbon", "Rhum", "Tequila", "Digestif", "Autre"];
+  const ccVars = (cat) => { const k = CATCOL[cat] || CATCOL.Autre; return "--cc:" + k.cc + ";--band:" + k.band + ";--ink:" + k.ink; };
+  const CATS = ["Champagne", "Bulles", "Blanc", "Rosé", "Rouge", "Spiritueux", "Autre"];
+  const MOMENTS = [
+    ["welcome", "Welcome dinner", "la veille"],
+    ["cocktail", "Cocktail", "vin d'honneur"],
+    ["diner", "Dîner", ""],
+    ["dessert", "Dessert", "fin de repas"],
+    ["soiree", "Soirée", ""],
+    ["brunch", "Brunch lendemain", ""]
+  ];
+  const MSTAT = ["", "Oui", "Non", "À confirmer"];
+  const FORMATS = ["", "1 jour", "Week-end 2 jours", "Week-end 3 jours", "Plus de 3 jours", "Autre"];
+  const BFOURCH = ["", "Moins de 1 000 €", "1 000 – 2 000 €", "2 000 – 3 000 €", "3 000 – 4 000 €", "4 000 – 4 500 €", "4 500 – 5 000 €", "5 000 – 8 000 €", "8 000 – 12 000 €", "Plus de 12 000 €", "Pas encore défini"];
+  const BFLEX = ["", "Ferme", "Un peu souple", "Souple", "À définir"];
+  const BPERIM = ["", "Vins seuls", "Vins et champagne", "Vins, champagne et bières", "Tout le bar (avec spiritueux)", "À préciser"];
+  const BDECID = ["", "Le couple", "Les parents", "Couple et parents", "Wedding planner"];
+  const BCATS = ["Champagne", "Bulles", "Blanc", "Rosé", "Rouge"];
+  const BPRIX = ["", "Moins de 10 €", "10 – 12 €", "13 – 15 €", "15 – 20 €", "20 – 30 €", "30 – 45 €", "Plus de 45 €", "Pas concerné"];
+  const FACES = [["coeur", "😍", "Coup de cœur"], ["aime", "🙂", "Aime"], ["moyen", "😐", "Mitigé"], ["non", "🙁", "N'aime pas"]];
+  const FACE = Object.fromEntries(FACES.map((f) => [f[0], f]));
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const cap = (s) => String(s || "").trim().replace(/\s+/g, " ").toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  const LS = "pdv-salon-v2";
+
+  let mode = "sync";
+  let couples = [];           // [{id, ...}]
+  let customRefs = [];        // [{id, cat, label}]
+  let currentId = null, current = null, dirty = false, saveTimer = null, saving = false;
+
+  function toast(m) { const t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 2300); }
+  function setStatus(k, txt) { $("dot").className = "dot" + (k ? " " + k : ""); $("statusTxt").textContent = txt; }
+  function lsSave() { cacheSave(); }
+  const fmtDate = (d) => { if (!d) return ""; const x = new Date(d + "T12:00"); return isNaN(x) ? d : "Mariage le " + x.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); };
+  const coupleName = (c) => {
+    const a = [c.p1, c.n1].filter(Boolean).join(" "), b = [c.p2, c.n2].filter(Boolean).join(" ");
+    return [a, b].filter(Boolean).join(" & ") || "Couple sans nom";
+  };
+  const isDone = (c) => (typeof c.done === "boolean" ? c.done : !!(c.tasting && c.tasting.length));
+  function blankCouple(d) {
+    return Object.assign({ p1: "", n1: "", p2: "", n2: "", lieu: "", date: "", invites: "", format: "", moments: {}, selection: [], tasting: [], planned: [], budget: {}, notes: "", done: false, createdAt: Date.now() }, d || {});
+  }
+  function refsFor(cat) {
+    const base = (CATALOGUE[cat] || []).slice();
+    customRefs.filter((r) => r.cat === cat).forEach((r) => { if (!base.includes(r.label)) base.push(r.label + " ✎"); });
+    return base;
+  }
+
+  function catDots(c) {
+    const cats = CATS.filter((cat) => (c.tasting || []).some((t) => t.cat === cat));
+    return cats.length ? '<div class="dots">' + cats.map((cat) => '<span class="cdot" title="' + esc(cat) + '" style="' + ccVars(cat) + '"></span>').join("") + '</div>' : "";
+  }
+  // ---------- liste ----------
+  function renderList() {
+    const q = $("search").value.trim().toLowerCase(), f = $("filter").value;
+    $("sAll").textContent = couples.length;
+    $("sDone").textContent = couples.filter(isDone).length;
+    const sorted = couples.slice().sort((a, b) => (a.n1 || a.p1 || "").localeCompare(b.n1 || b.p1 || "", "fr"));
+    const shown = sorted.filter((c) => (f === "all" || (f === "done") === isDone(c)) && (!q || (coupleName(c) + " " + c.lieu).toLowerCase().includes(q)));
+    const L = $("list");
+    if (!couples.length) { L.innerHTML = '<div class="empty"><strong>Aucun couple</strong>Importez la liste reçue avant le salon, ou ajoutez un couple à la main.</div>'; return; }
+    if (!shown.length) { L.innerHTML = '<div class="empty">Aucun couple ne correspond.</div>'; return; }
+    L.innerHTML = shown.map((c) => '<button type="button" class="crow' + (c.id === currentId ? " sel" : "") + '" data-id="' + esc(c.id) + '"><span><div class="n">' + esc(coupleName(c)) + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span><span class="chip' + (isDone(c) ? " done" : "") + '">' + (isDone(c) ? "Dégusté" : "À recevoir") + '</span></button>').join("");
+  }
+
+  // ---------- fiche ----------
+  function opts(list, val, first) {
+    return (first != null ? '<option value="">' + esc(first) + '</option>' : "") + list.filter((x) => x !== "").map((x) => '<option' + (x === val ? " selected" : "") + ">" + esc(x) + "</option>").join("");
+  }
+  function picker(kind) {
+    return '<div class="picker" data-picker="' + kind + '">' +
+      '<select data-pcat aria-label="Catégorie">' + opts(CATS, "", "Catégorie…") + '</select>' +
+      '<select data-pref aria-label="Référence" disabled><option value="">Choisir d\'abord la catégorie</option></select>' +
+      '<div class="other" hidden><input data-pother placeholder="Nom de la référence (domaine, cuvée)"><button type="button" class="primary" data-padd>Ajouter</button></div></div>';
+  }
+  let catFilter = "", viewFilter = "all";
+  function winesOf(cat, c) {
+    const list = (CATALOGUE[cat] || []).slice();
+    customRefs.filter((r) => r.cat === cat).forEach((r) => { if (!list.includes(r.label)) list.push(r.label); });
+    c.tasting.concat(c.selection).forEach((x) => { if (x.cat === cat && !list.includes(x.ref)) list.push(x.ref); });
+    (c.planned || []).forEach((p) => { if (p.cat === cat && !list.includes(p.ref)) list.push(p.ref); });
+    return list;
+  }
+  const splitRef = (w) => { const m = META.get(w); if (m) return [m.dom, m.cuv]; const p = w.split(" — "); return p.length > 1 ? [p[0], p.slice(1).join(" — ")] : ["", w]; };
+  function bottle(w, cls) { const t = thumbOf(w); return t ? '<img class="' + cls + '" src="' + t + '" alt="">' : '<span class="' + cls + ' nob"></span>'; }
+  function ficheLink(w) { const u = ficheOf(w); return u ? '<a class="fiche" href="' + esc(u) + '" target="_blank" rel="noopener">Fiche ↗</a>' : ""; }
+  function catPills(counter) {
+    return CATS.map((cat) => { const n = counter(cat); return '<button type="button" class="pill' + (catFilter === cat ? " on" : "") + '" data-catf="' + esc(cat) + '" style="' + ccVars(cat) + '"><span class="sw"></span>' + esc(cat) + (n ? ' <span class="n">' + n + '</span>' : "") + '</button>'; }).join("");
+  }
+  const TARIFS = [["A", "Tarif A"], ["B", "Tarif B"], ["C", "Tarif C"], ["", "Sans prix"]];
+  let regionFilter = { Blanc: "", Rouge: "" };
+  function prixOf(w, c) { const m = META.get(w), t = c.tarif === undefined ? "A" : c.tarif; if (!m || !t || !m.prix) return ""; const v = m.prix["ABC".indexOf(t)]; return v ? v + " €" : ""; }
+  function bottleCard(w, cat, c, planned) {
+    const [dom, cuv] = splitRef(w), on = planned.has(w), px = prixOf(w, c);
+    return '<div class="btl' + (on ? " on" : "") + '" data-ref="' + esc(w) + '" data-cat="' + esc(cat) + '"><button type="button" class="btap" data-plan aria-pressed="' + on + '">' + bottle(w, "bimg") +
+      '<span class="btxt"><span class="dom">' + esc(dom) + '</span><span class="cuv">' + esc(cuv) + '</span>' + (px ? '<span class="px">' + esc(px) + '</span>' : "") + '</span><span class="chk">' + (on ? "✓" : "+") + '</span></button>' + ficheLink(w) + '</div>';
+  }
+  function planPanel(c) {
+    const planned = new Set((c.planned || []).map((p) => p.ref));
+    const tar = c.tarif === undefined ? "A" : c.tarif;
+    let h = '<div class="catbar">' + catPills((cat) => (c.planned || []).filter((p) => p.cat === cat).length) +
+      '<div class="vf">' + [["all", "Tout le catalogue"], ["sel", "Sélectionnés (" + planned.size + ")"]].map((v) => '<button type="button" data-vf="' + v[0] + '" class="' + (viewFilter === v[0] ? "on" : "") + '">' + v[1] + '</button>').join("") + '</div></div>' +
+      '<div class="tarifs"><span class="hint">Prix affichés</span><div class="vf">' + TARIFS.map((t) => '<button type="button" data-tarif="' + t[0] + '" class="' + (tar === t[0] ? "on" : "") + '">' + t[1] + '</button>').join("") + '</div></div>' +
+      '<p class="legend">Touchez les bouteilles à faire goûter au couple. « Fiche ↗ » ouvre la fiche dégustation du vin.</p>';
+    let shown = 0;
+    CATS.filter((cat) => !catFilter || cat === catFilter).forEach((cat) => {
+      let wines = winesOf(cat, c);
+      if (viewFilter === "sel") wines = wines.filter((w) => planned.has(w));
+      const free = !(CATALOGUE[cat] || []).length;
+      if (!wines.length && (viewFilter !== "all" || (free && !catFilter))) return;
+      shown++;
+      const n = wines.filter((w) => planned.has(w)).length;
+      h += '<section class="catsec" style="' + ccVars(cat) + '"><h3 class="cath"><span class="tag">' + esc(cat) + '</span><small>' + (n ? n + " sélectionné" + (n > 1 ? "s" : "") : (CATALOGUE[cat] ? CATALOGUE[cat].length + " références" : "")) + '</small></h3>';
+      if (regionFilter[cat] !== undefined) {
+        const regOf = (w) => (META.get(w) || {}).reg || "Autres";
+        const regs = [...new Set(winesOf(cat, c).map(regOf))].sort((a, b) => (a === "Autres") - (b === "Autres") || a.localeCompare(b, "fr"));
+        const rf = regions(cat, regs);
+        h += '<div class="regs">' + ['<button type="button" class="reg' + (!rf ? " on" : "") + '" data-reg="" data-regcat="' + esc(cat) + '">Toutes les régions</button>'].concat(regs.map((r) => '<button type="button" class="reg' + (rf === r ? " on" : "") + '" data-reg="' + esc(r) + '" data-regcat="' + esc(cat) + '">' + esc(r) + '</button>')).join("") + '</div>';
+        regs.filter((r) => !rf || r === rf).forEach((r) => {
+          const ws = wines.filter((w) => regOf(w) === r); if (!ws.length) return;
+          h += '<div class="regh">' + esc(r) + '<small>' + ws.length + '</small></div><div class="bottles">' + ws.map((w) => bottleCard(w, cat, c, planned)).join("") + '</div>';
+        });
+      } else h += '<div class="bottles">' + wines.map((w) => bottleCard(w, cat, c, planned)).join("") + '</div>';
+      h += '' + (viewFilter === "all" ? '<div class="addother"><input data-other-cat="' + esc(cat) + '" placeholder="+ Autre référence ' + esc(cat.toLowerCase()) + ' (domaine — cuvée)"><button type="button" data-addother="' + esc(cat) + '">Ajouter</button></div>' : "") + '</section>';
+    });
+    if (!shown) h += '<div class="none">Aucun vin sélectionné pour l\'instant.</div>';
+    if ((c.planned || []).length) h += '<div class="gobar"><button type="button" class="primary" data-gotab="degustation">Commencer la dégustation · ' + c.planned.length + ' vin' + (c.planned.length > 1 ? "s" : "") + ' →</button></div>';
+    return h;
+  }
+  function regions(cat, regs) { const r = regionFilter[cat]; return regs.includes(r) ? r : ""; }
+  function tasteList(c) {
+    const out = [], seen = new Set();
+    const add = (ref, cat) => { if (!seen.has(ref)) { seen.add(ref); out.push({ ref, cat }); } };
+    (c.planned || []).forEach((p) => add(p.ref, p.cat));
+    c.tasting.forEach((t) => add(t.ref, t.cat));
+    const order = (x) => CATS.indexOf(x.cat) * 1000 + (META.get(x.ref) ? META.get(x.ref).n : 999);
+    return out.sort((a, b) => order(a) - order(b));
+  }
+  function momentsOf(t, k) {
+    if (t && Array.isArray(t.moments)) return t.moments;
+    const m = (t && t.moment) || (k && k.moment) || "";
+    return m ? m.split(/\s*,\s*/) : [];
+  }
+  function tastePanel(c) {
+    const list = tasteList(c), momentsOpts = MOMENTS.map((m) => m[1]);
+    const removedMoments = new Set(MOMENTS.filter((m) => ((c.moments || {})[m[0]] || {}).s === "Non").map((m) => m[1]));
+    if (!list.length) return '<div class="none" style="display:grid;gap:12px;justify-items:start">Aucun vin prévu pour ce couple.<button type="button" class="primary" data-gotab="choix">Choisir les vins à goûter</button></div>';
+    const tBy = new Map(c.tasting.map((t) => [t.ref, t])), sBy = new Map(c.selection.map((x) => [x.ref, x]));
+    const done = list.filter((x) => (tBy.get(x.ref) || {}).avis).length;
+    let h = '<div class="progress"><span><b>' + done + '</b> / ' + list.length + ' vins notés</span><span class="bar"><i style="width:' + Math.round(done / list.length * 100) + '%"></i></span><button type="button" class="ghost small" data-gotab="choix">+ Ajouter un vin</button></div>';
+    h += list.map((x) => {
+      const t = tBy.get(x.ref) || {}, k = sBy.get(x.ref), [dom, cuv] = splitRef(x.ref), mos = momentsOf(t, k);
+      return '<div class="tcard' + (t.avis ? " noted" : "") + (t.avis === "coeur" ? " coeur" : "") + '" data-ref="' + esc(x.ref) + '" data-cat="' + esc(x.cat) + '" style="' + ccVars(x.cat) + '">' + bottle(x.ref, "timg") +
+        '<div class="tmain"><div class="thead"><div style="min-width:0"><span class="ttag">' + esc(x.cat) + '</span><div class="dom">' + esc(dom) + '</div><div class="cuv">' + esc(cuv) + '</div></div>' +
+        '<div class="tact">' + ficheLink(x.ref) + '<button type="button" class="star' + (k ? " on" : "") + '" data-keep title="Retenir pour le mariage" aria-label="Retenir pour le mariage">' + (k ? "★" : "☆") + '</button></div></div>' +
+        '<div class="faces">' + FACES.map((f) => '<button type="button" class="face' + (t.avis === f[0] ? " on" : "") + '" data-face="' + f[0] + '" title="' + f[2] + '" aria-label="' + f[2] + '">' + f[1] + '<span>' + f[2] + '</span></button>').join("") + '</div>' +
+        '<div class="wrow"><input data-wnote value="' + esc(t.note || "") + '" placeholder="Retour du couple (trop boisé, parfait pour le cocktail…)"></div>' +
+        '<div class="mchips"><span class="hint">Pour quels moments ?</span>' + momentsOpts.filter((m) => mos.includes(m) || !removedMoments.has(m)).map((m) => '<button type="button" class="mchip' + (mos.includes(m) ? " on" : "") + '" data-wm="' + esc(m) + '" aria-pressed="' + mos.includes(m) + '">' + esc(m) + '</button>').join("") + '</div>' +
+        '<button type="button" class="rm" data-unplan>Retirer de la dégustation</button></div></div>';
+    }).join("");
+    return h;
+  }
+  const TABS = [["mariage", "Mariage"], ["choix", "Vins à goûter"], ["degustation", "Dégustation"], ["notes", "Notes"]];
+  let activeTab = "mariage", editIdentity = false;
+  function tabBadge(k, c) {
+    if (k === "choix") return (c.planned || []).length ? String(c.planned.length) : "";
+    if (k === "degustation") { const tot = tasteList(c).length, n = c.tasting.filter((t) => t.avis).length; return tot ? n + "/" + tot : ""; }
+    if (k === "mariage") { const n = MOMENTS.filter((m) => ((c.moments || {})[m[0]] || {}).s === "Oui").length; return n ? String(n) : ""; }
+    if (k === "budget") { const b = c.budget || {}; return (b.total || b.fourchette) ? "€" : ""; }
+    if (k === "notes") return c.notes ? "•" : "";
+    return "";
+  }
+  function renderFiche() {
+    const M = $("main");
+    if (!current) { M.innerHTML = '<div class="empty"><strong>Choisissez un couple</strong>Touchez un nom dans la liste pour ouvrir sa fiche.</div>'; return; }
+    const c = current;
+    const mom = (k) => (c.moments && c.moments[k]) || {};
+    const momentsOpts = MOMENTS.map((m) => m[1]);
+    const b = c.budget || {}, bp = b.prix || {};
+    const perHead = (() => { const t = parseFloat(String(b.total || "").replace(/\s/g, "").replace(",", ".")), n = parseInt(c.invites, 10); return t > 0 && n > 0 ? Math.round(t / n) : 0; })();
+    const show = (k) => (activeTab === k ? "" : " hidden");
+    M.innerHTML =
+      '<div class="fhead"><div style="min-width:0"><button type="button" class="ghost small back" id="back">← Couples</button>' +
+      '<h2 id="fName">' + esc(coupleName(c)) + '</h2><div class="lieu" id="fLieu"' + (c.lieu ? "" : " hidden") + '>' + esc(c.lieu) + '</div><div class="fdate" id="fDate"' + (c.date ? "" : " hidden") + '>' + esc(fmtDate(c.date)) + '</div>' +
+      (editIdentity ? "" : '<button type="button" class="ghost small" id="identEdit" style="margin-top:6px">✎ Modifier les noms et le lieu</button>') + '</div>' +
+      '<div style="display:grid;gap:6px;justify-items:end"><span class="saved" id="saved">À jour</span>' +
+      '<label class="f" style="display:flex;gap:6px;align-items:center;font-size:14px;color:var(--fg)"><input type="checkbox" data-k="done" style="width:20px;height:20px"' + (isDone(c) ? " checked" : "") + '> Dégustation faite</label></div></div>' +
+
+      (editIdentity ? '<section class="blk ident"><h3>Noms et lieu <small>modifiables à tout moment</small></h3><div class="cols">' +
+        ["p1|Prénom 1", "n1|Nom 1", "p2|Prénom 2", "n2|Nom 2"].map((x) => { const [k, l] = x.split("|"); return '<label class="f">' + l + '<input data-k="' + k + '" data-ident value="' + esc(c[k]) + '" autocapitalize="words"></label>'; }).join("") +
+        '</div><div class="cols"><label class="f" style="grid-column:span 2">Lieu de réception<input data-k="lieu" data-ident value="' + esc(c.lieu) + '" autocapitalize="words"></label>' +
+        '<label class="f">Date du mariage<input type="date" data-k="date" data-ident value="' + esc(c.date) + '"></label></div>' +
+        '<div class="tools"><button type="button" class="primary small" id="identDone">Terminé</button><button type="button" class="danger small" id="delCouple">Supprimer ce couple</button></div></section>' : "") +
+      '<div class="tabs" role="tablist">' + TABS.map((t) => { const n = tabBadge(t[0], c); return '<button type="button" role="tab" class="tab' + (activeTab === t[0] ? " on" : "") + '" aria-selected="' + (activeTab === t[0]) + '" data-tab="' + t[0] + '">' + t[1] + (n ? ' <span class="badge">' + esc(n) + '</span>' : "") + '</button>'; }).join("") + '</div>' +
+
+      // ----- Mariage
+      '<div class="tabpanel"' + show("mariage") + '><section class="blk"><h3>Le mariage</h3><div class="cols">' +
+      '<label class="f">Invités<input inputmode="numeric" data-k="invites" value="' + esc(c.invites) + '" placeholder="ex. 120"></label>' +
+      '</div>' +
+      '<div class="moments">' + MOMENTS.filter((m) => mom(m[0]).s !== "Non").map((m) => {
+        const v = mom(m[0]);
+        return '<div class="mrow mrow4"><div class="mn">' + esc(m[1]) + (m[2] ? "<small>" + esc(m[2]) + "</small>" : "") + '</div>' +
+          '<select data-m="' + m[0] + '" data-mf="s" aria-label="' + esc(m[1]) + '" class="' + (v.s ? "set" : "") + '">' + opts(["", "Oui", "À confirmer"], v.s || "", "—") + '</select>' +
+          '<input inputmode="numeric" data-m="' + m[0] + '" data-mf="inv" class="' + (v.inv && v.auto ? "auto" : "") + '" value="' + esc(v.inv || "") + '" placeholder="' + (v.s === "Non" ? "—" : "pers.") + '" aria-label="Personnes ' + esc(m[1]) + '"><button type="button" class="mrm" data-mrm="' + m[0] + '" aria-label="Retirer ' + esc(m[1]) + '" title="Pas de ' + esc(m[1].toLowerCase()) + '">−</button></div>';
+      }).join("") + '</div>' +
+      (MOMENTS.some((m) => mom(m[0]).s === "Non") ? '<div class="mchips" style="margin-top:8px"><span class="hint">Remettre un moment retiré par erreur :</span>' + MOMENTS.filter((m) => mom(m[0]).s === "Non").map((m) => '<button type="button" class="mchip" data-mrestore="' + m[0] + '">+ ' + esc(m[1]) + '</button>').join("") + '</div>' : "") +
+      '</section>' +
+
+      '<section class="blk"><h3>Spiritueux</h3><div class="cols">' +
+      '<label class="f">Besoin en spiritueux<select data-k="spirit" class="' + (c.spirit ? "set" : "") + '">' + opts(MSTAT, c.spirit || "", "—") + '</select></label>' +
+      '</div><div class="catbar">' + SPIRIT_TYPES.map((t) => '<button type="button" class="pill' + ((c.spiritTypes || []).includes(t) ? " on" : "") + '" data-spt="' + esc(t) + '" style="' + ccVars("Spiritueux") + '"><span class="sw"></span>' + esc(t) + '</button>').join("") + '</div>' +
+      ((c.spiritTypes || []).length ? '<div class="moments">' + c.spiritTypes.map((t) => { const v = (c.spiritPrix || {})[t] || ""; return '<div class="mrow" style="grid-template-columns:minmax(0,1fr) 190px"><div class="mn">' + esc(t) + '<small>prix visé par bouteille</small></div><select data-spp="' + esc(t) + '" class="' + (v ? "set" : "") + '" aria-label="Prix ' + esc(t) + '">' + opts(SPRIX, v, "—") + '</select></div>'; }).join("") + '</div>' : "") +
+      '<div class="cols">' +
+      '<label class="f" style="grid-column:span 2">Précisions (marque, moment, quantité)<input data-k="spiritNote" value="' + esc(c.spiritNote || "") + '" placeholder="Gin tonic en soirée, rhum, digestif…"></label>' +
+      '</div></section>' +
+
+      '<section class="blk"><h3>Budget boissons</h3><div class="cols">' +
+      '<label class="f">Enveloppe<select data-b="fourchette" class="' + (b.fourchette ? "set" : "") + '">' + opts(BFOURCH, b.fourchette || "", "—") + '</select></label>' +
+      '<label class="f">Montant annoncé (€)<input inputmode="decimal" data-b="total" value="' + esc(b.total || "") + '" placeholder="ex. 4 500"></label>' +
+      '</div>' + (perHead ? '<p class="hint" style="font-size:14px">Soit environ <strong style="color:var(--fg)">' + perHead.toLocaleString("fr-FR") + ' € par invité</strong> (' + esc(c.invites) + ' invités).</p>' : "") +
+      '</section>' +
+      '<section class="blk"><h3>Prix visé par bouteille</h3><div class="moments">' + BCATS.map((k) =>
+        '<div class="mrow" style="grid-template-columns:minmax(0,1fr) 170px"><div class="mn">' + esc(k) + '</div><select data-bp="' + esc(k) + '" class="' + (bp[k] ? "set" : "") + '" aria-label="Prix ' + esc(k) + '">' + opts(k === "Champagne" ? BPRIX.filter((x) => !["Moins de 10 €", "10 – 12 €", "13 – 15 €"].includes(x)) : BPRIX, bp[k] || "", "—") + '</select></div>'
+      ).join("") + '</div></section>' +
+      '<section class="blk"><h3>Remarques budget</h3><textarea data-b="note" placeholder="Priorités, postes à réduire, parents qui participent…">' + esc(b.note || "") + '</textarea></section></div>' +
+
+      // ----- Dégustation
+      '<div class="tabpanel"' + show("choix") + '>' + (activeTab === "choix" ? planPanel(c) : "") + '</div>' +
+      '<div class="tabpanel"' + show("degustation") + '>' + (activeTab === "degustation" ? tastePanel(c) : "") + '</div>' +
+
+      // ----- Budget
+
+      // ----- Notes
+      '<div class="tabpanel"' + show("notes") + '><section class="blk"><h3>Notes</h3><textarea data-k="notes" placeholder="Traiteur, wedding planner, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
+      '</div>';
+  }
+
+  function openCouple(id) {
+    flush();
+    const c = couples.find((x) => x.id === id); if (!c) return;
+    currentId = id; current = blankCouple(JSON.parse(JSON.stringify(c))); current.id = id; dirty = false;
+    editIdentity = !(c.p1 || c.n1 || c.p2 || c.n2);
+    if (current.invites && syncMomentInvites()) markDirty(true);
+    document.body.classList.add("open");
+    renderFiche(); renderList();
+    if (window.matchMedia("(max-width: 919px)").matches) window.scrollTo(0, 0);
+  }
+
+  // ---------- enregistrement ----------
+  function markDirty(structural) {
+    dirty = true; current.updatedAt = Date.now();
+    const i = couples.findIndex((x) => x.id === currentId); if (i >= 0) couples[i] = Object.assign({}, current);
+    const s = $("saved"); if (s) s.textContent = "Enregistrement…";
+    clearTimeout(saveTimer); saveTimer = setTimeout(flush, structural ? 150 : 700);
+    renderList();
+  }
+  async function flush() {
+    clearTimeout(saveTimer);
+    if (!dirty || !current) return;
+    if (saving) { saveTimer = setTimeout(flush, 300); return; }
+    saving = true; dirty = false;
+    const data = Object.assign({}, current); delete data.id;
+    try {
+      saveDoc("couples", current.id, data);
+      const s = $("saved"); if (s) s.textContent = (online === false ? "Enregistré sur l'appareil " : "Enregistré ") + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      dirty = true; const s = $("saved"); if (s) s.textContent = "Non enregistré";
+      toast(e && e.code === "invalid_argument" ? "Accès en lecture seule : demandez un accès Contributeur" : "Échec de l'enregistrement, nouvel essai…");
+      if (!(e && e.code === "invalid_argument")) saveTimer = setTimeout(flush, 2500);
+    } finally { saving = false; }
+  }
+
+  async function addCustomRef(cat, label) {
+    if (customRefs.some((r) => r.cat === cat && r.label === label) || (CATALOGUE[cat] || []).includes(label)) return;
+    const r = { cat, label, createdAt: Date.now() };
+    const id = uid(); customRefs.push(Object.assign({ id }, r)); saveDoc("refs", id, r);
+  }
+
+  // ---------- événements fiche ----------
+  const M = $("main");
+  M.addEventListener("input", (e) => {
+    const el = e.target; if (!current) return;
+    if (el.dataset.k && el.type !== "checkbox" && el.tagName !== "SELECT") {
+      current[el.dataset.k] = el.value; markDirty();
+      if (el.dataset.k === "invites") syncMomentInvites();
+      if ("ident" in el.dataset) { $("fName").textContent = coupleName(current); const l = $("fLieu"); l.textContent = current.lieu; l.hidden = !current.lieu; const d = $("fDate"); d.textContent = fmtDate(current.date); d.hidden = !current.date; }
+    }
+    else if (el.dataset.m && el.tagName === "INPUT") { current.moments = current.moments || {}; const m = current.moments[el.dataset.m] = Object.assign({}, current.moments[el.dataset.m]); m[el.dataset.mf] = el.value; if (el.dataset.mf === "inv") { m.auto = !el.value; el.classList.remove("auto"); } markDirty(); }
+    else if ("wnote" in el.dataset) { const t = ensureTasting(el.closest(".tcard")); t.note = el.value; markDirty(); }
+    else if (el.dataset.f === "note") { const it = itemOf(el); if (it) { it.note = el.value; markDirty(); } }
+    else if (el.dataset.b && el.tagName !== "SELECT") { current.budget = Object.assign({}, current.budget); current.budget[el.dataset.b] = el.value; markDirty(); if (el.dataset.b === "total") updatePerHead(); }
+  });
+  M.addEventListener("change", (e) => {
+    const el = e.target; if (!current) return;
+    if (el.dataset.k === "done") { current.done = el.checked; markDirty(true); return; }
+    if (el.dataset.k && el.tagName === "SELECT") { current[el.dataset.k] = el.value; el.classList.toggle("set", !!el.value); markDirty(true); return; }
+    if (el.dataset.k && el.type === "date") { current[el.dataset.k] = el.value; markDirty(true); return; }
+    if (el.dataset.m && el.tagName === "SELECT") { current.moments = current.moments || {}; const m = current.moments[el.dataset.m] = Object.assign({}, current.moments[el.dataset.m]); m.s = el.value; el.classList.toggle("set", !!el.value);
+      if (m.s === "Non") { m.inv = ""; m.auto = true; }
+      else if (!m.inv && current.invites) { m.inv = current.invites; m.auto = true; }
+      const inp = M.querySelector('input[data-m="' + el.dataset.m + '"]'); if (inp) { inp.value = m.inv || ""; inp.classList.toggle("auto", !!(m.inv && m.auto)); inp.placeholder = m.s === "Non" ? "—" : "pers."; }
+      markDirty(true); updateBadges(); return; }
+    if (el.dataset.b && el.tagName === "SELECT") { current.budget = Object.assign({}, current.budget); current.budget[el.dataset.b] = el.value; el.classList.toggle("set", !!el.value); markDirty(true); updateBadges(); return; }
+    if (el.dataset.bp) { current.budget = Object.assign({}, current.budget); current.budget.prix = Object.assign({}, current.budget.prix); current.budget.prix[el.dataset.bp] = el.value; el.classList.toggle("set", !!el.value); markDirty(true); return; }
+    if (el.dataset.spp) { current.spiritPrix = Object.assign({}, current.spiritPrix); current.spiritPrix[el.dataset.spp] = el.value; el.classList.toggle("set", !!el.value); markDirty(true); return; }
+    if ("wmoment" in el.dataset) { const card = el.closest(".tcard"); if (card) ensureTasting(card); const ref = el.closest(".wine, .tcard").dataset.ref; current.tasting.concat(current.selection).forEach((x) => { if (x.ref === ref) x.moment = el.value; }); el.classList.toggle("set", !!el.value); markDirty(true); return; }
+    if (el.dataset.f === "moment") { const it = itemOf(el); if (it) { it.moment = el.value; el.classList.toggle("set", !!el.value); markDirty(true); } return; }
+    if ("pcat" in el.dataset) {
+      const p = el.closest("[data-picker]"), rs = p.querySelector("[data-pref]"), cat = el.value;
+      p.querySelector(".other").hidden = true;
+      if (!cat) { rs.disabled = true; rs.innerHTML = '<option value="">Choisir d\'abord la catégorie</option>'; return; }
+      const list = refsFor(cat);
+      rs.disabled = false;
+      rs.innerHTML = '<option value="">' + (list.length ? "Choisir la référence…" : "Saisir la référence…") + '</option>' + list.map((r) => "<option>" + esc(r) + "</option>").join("") + '<option value="__other">+ Autre référence (saisie libre)</option>';
+      if (!list.length) { rs.value = "__other"; p.querySelector(".other").hidden = false; p.querySelector("[data-pother]").focus(); }
+      else rs.focus();
+      return;
+    }
+    if ("pref" in el.dataset) {
+      const p = el.closest("[data-picker]");
+      if (el.value === "__other") { p.querySelector(".other").hidden = false; p.querySelector("[data-pother]").focus(); return; }
+      if (el.value) addItem(p.dataset.picker, p.querySelector("[data-pcat]").value, el.value.replace(/ ✎$/, ""));
+    }
+  });
+  M.addEventListener("focusout", (e) => {
+    const el = e.target; if (!current || !("ident" in el.dataset)) return;
+    const k = el.dataset.k; if (k === "date") return; const v = k === "n1" || k === "n2" ? el.value.trim().replace(/\s+/g, " ").toUpperCase() : k === "lieu" ? el.value.trim().replace(/\s+/g, " ") : cap(el.value);
+    if (v !== current[k]) { current[k] = v; el.value = v; markDirty(true); $("fName").textContent = coupleName(current); }
+  });
+  M.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && "ident" in e.target.dataset) { e.preventDefault(); const all = [...M.querySelectorAll("[data-ident]")]; const i = all.indexOf(e.target); if (i < all.length - 1) all[i + 1].focus(); else e.target.blur(); return; }
+    if (e.key === "Enter" && e.target.dataset.otherCat) { e.preventDefault(); addOtherCat(e.target.dataset.otherCat); return; }
+    if (e.key === "Enter" && "pother" in e.target.dataset) { e.preventDefault(); addOther(e.target.closest("[data-picker]")); }
+  });
+  M.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || !current) return;
+    if (b.id === "identEdit") { editIdentity = true; renderFiche(); const el = M.querySelector('[data-k="p1"]'); if (el) el.focus(); return; }
+    if (b.id === "identDone") { editIdentity = false; flush(); renderFiche(); return; }
+    if (b.dataset.tab) { activeTab = b.dataset.tab; const y = window.scrollY; renderFiche(); window.scrollTo(0, Math.min(y, M.offsetTop)); return; }
+    if (b.id === "back") { flush(); document.body.classList.remove("open"); currentId = null; current = null; renderList(); renderFiche(); window.scrollTo(0, 0); return; }
+    if ("padd" in b.dataset) { addOther(b.closest("[data-picker]")); return; }
+    if (b.dataset.spt) {
+      const t = b.dataset.spt, arr = (current.spiritTypes || []).slice(), i = arr.indexOf(t);
+      if (i >= 0) arr.splice(i, 1); else arr.push(t);
+      current.spiritTypes = arr;
+      if (arr.length && !current.spirit) { current.spirit = "Oui"; const sel = M.querySelector('[data-k="spirit"]'); }
+      markDirty(true); refreshItems(); return;
+    }
+    if (b.dataset.tarif !== undefined) { current.tarif = b.dataset.tarif; markDirty(true); refreshItems(); return; }
+    if (b.dataset.regcat) { regionFilter[b.dataset.regcat] = b.dataset.reg; refreshItems(); return; }
+    if (b.dataset.catf) { catFilter = catFilter === b.dataset.catf ? "" : b.dataset.catf; refreshItems(); return; }
+    if (b.dataset.vf) { viewFilter = b.dataset.vf; refreshItems(); return; }
+    if (b.dataset.gotab) { activeTab = b.dataset.gotab; catFilter = ""; viewFilter = "all"; renderFiche(); const t = M.querySelector(".tabs"); if (t) t.scrollIntoView({ block: "start" }); return; }
+    if ("plan" in b.dataset) {
+      const w = b.closest(".btl"), ref = w.dataset.ref, cat = w.dataset.cat, pl = (current.planned || []).slice(), i = pl.findIndex((p) => p.ref === ref);
+      if (i >= 0) pl.splice(i, 1); else pl.push({ ref, cat });
+      current.planned = pl; markDirty(true);
+      w.classList.toggle("on", i < 0); b.setAttribute("aria-pressed", String(i < 0)); w.querySelector(".chk").textContent = i < 0 ? "✓" : "+";
+      updateBadges(); refreshGoBar(); return;
+    }
+    if ("face" in b.dataset && b.closest(".tcard")) {
+      const t = ensureTasting(b.closest(".tcard")); t.avis = t.avis === b.dataset.face ? "" : b.dataset.face; markDirty(true); refreshItems(); updateBadges(); return;
+    }
+    if (b.dataset.mrm || b.dataset.mrestore) {
+      const key = b.dataset.mrm || b.dataset.mrestore; current.moments = Object.assign({}, current.moments);
+      const m = Object.assign({}, current.moments[key]);
+      if (b.dataset.mrm) { m.s = "Non"; m.inv = ""; m.auto = true; }
+      else { m.s = ""; if (current.invites) { m.inv = current.invites; m.auto = true; } }
+      current.moments[key] = m; markDirty(true); refreshItems(); updateBadges(); return;
+    }
+    if (b.dataset.wm) {
+      const card = b.closest(".tcard"), t = ensureTasting(card), k = current.selection.find((x) => x.ref === card.dataset.ref);
+      const arr = momentsOf(t, k).slice(), i = arr.indexOf(b.dataset.wm);
+      if (i >= 0) arr.splice(i, 1); else arr.push(b.dataset.wm);
+      const order = MOMENTS.map((m) => m[1]); arr.sort((a, z) => order.indexOf(a) - order.indexOf(z));
+      t.moments = arr; t.moment = arr.join(", "); if (k) k.moment = t.moment;
+      b.classList.toggle("on", i < 0); b.setAttribute("aria-pressed", String(i < 0)); markDirty(true); return;
+    }
+    if ("unplan" in b.dataset) { const ref = b.closest(".tcard").dataset.ref; current.planned = (current.planned || []).filter((p) => p.ref !== ref); current.tasting = current.tasting.filter((x) => x.ref !== ref); markDirty(true); refreshItems(); updateBadges(); return; }
+    if ("wtap" in b.dataset) {
+      const w = b.closest(".wine"), ref = w.dataset.ref, cat = w.dataset.cat;
+      if (!current.tasting.some((x) => x.ref === ref)) {
+        const k = current.selection.find((x) => x.ref === ref);
+        current.tasting.push({ id: uid(), cat, ref, avis: "", note: "", moment: (k && k.moment) || "" });
+        current.done = true; markDirty(true); refreshItems(); updateBadges();
+      }
+      const box = M.querySelector('.wine[data-ref="' + CSS.escape(ref) + '"]'); if (box) box.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    if ("keep" in b.dataset) {
+      const w = b.closest(".wine, .tcard"), ref = w.dataset.ref, cat = w.dataset.cat;
+      if (current.selection.some((x) => x.ref === ref)) current.selection = current.selection.filter((x) => x.ref !== ref);
+      else { const t = current.tasting.find((x) => x.ref === ref); current.selection.push({ id: uid(), cat, ref, moment: (t && (t.moments ? t.moments.join(", ") : t.moment)) || "" }); }
+      markDirty(true); refreshItems(); return;
+    }
+    if ("untaste" in b.dataset) { const ref = b.closest(".wine").dataset.ref; current.tasting = current.tasting.filter((x) => x.ref !== ref); markDirty(true); refreshItems(); updateBadges(); return; }
+    if (b.dataset.addother) { addOtherCat(b.dataset.addother); return; }
+    if ("face" in b.dataset) { const it = itemOf(b); if (it) { it.avis = it.avis === b.dataset.face ? "" : b.dataset.face; markDirty(true); refreshItems(); } return; }
+    if ("del" in b.dataset) { const box = b.closest("[data-item]"); const k = box.dataset.item; current[k] = current[k].filter((x) => x.id !== box.dataset.id); markDirty(true); refreshItems(); return; }
+    if (b.id === "delCouple") {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Confirmer : supprimer définitivement"; return; }
+      deleteCouple(currentId);
+    }
+  });
+  function syncMomentInvites() {
+    let changed = false; current.moments = Object.assign({}, current.moments);
+    MOMENTS.forEach((mm) => {
+      const m = Object.assign({}, current.moments[mm[0]]);
+      if (m.s === "Non") return;
+      if (!m.inv || m.auto) {
+        const v = current.invites || "";
+        if (m.inv !== v) { m.inv = v; m.auto = true; current.moments[mm[0]] = m; changed = true; }
+        const inp = M.querySelector('input[data-m="' + mm[0] + '"]'); if (inp && document.activeElement !== inp) { inp.value = v; inp.classList.toggle("auto", !!v); }
+      }
+    });
+    return changed;
+  }
+  function updateBadges() {
+    M.querySelectorAll(".tab").forEach((t) => { const n = tabBadge(t.dataset.tab, current); const lbl = TABS.find((x) => x[0] === t.dataset.tab)[1]; t.innerHTML = esc(lbl) + (n ? ' <span class="badge">' + esc(n) + '</span>' : ""); });
+  }
+  let perHeadTimer = null;
+  function updatePerHead() { clearTimeout(perHeadTimer); perHeadTimer = setTimeout(() => { if (activeTab !== "mariage") return; const a = document.activeElement, sel = a && a.dataset ? a.dataset.b : null; const pos = a && a.selectionStart; renderFiche(); if (sel) { const el = M.querySelector('[data-b="' + sel + '"]'); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} } } }, 900); }
+  function itemOf(el) { const box = el.closest("[data-item]"); if (!box) return null; return current[box.dataset.item].find((x) => x.id === box.dataset.id); }
+  function ensureTasting(card) {
+    const ref = card.dataset.ref, cat = card.dataset.cat;
+    let t = current.tasting.find((x) => x.ref === ref);
+    if (!t) { const k = current.selection.find((x) => x.ref === ref); t = { id: uid(), cat, ref, avis: "", note: "", moment: (k && k.moment) || "" }; current.tasting.push(t); current.done = true; }
+    return t;
+  }
+  function refreshGoBar() {
+    const panel = M.querySelector(".bottles") && M.querySelector(".bottles").closest(".tabpanel"); if (!panel) return;
+    let g = panel.querySelector(".gobar"); const n = (current.planned || []).length;
+    if (!n) { if (g) g.remove(); return; }
+    if (!g) { g = document.createElement("div"); g.className = "gobar"; panel.appendChild(g); }
+    g.innerHTML = '<button type="button" class="primary" data-gotab="degustation">Commencer la dégustation · ' + n + ' vin' + (n > 1 ? "s" : "") + ' →</button>';
+    panel.querySelectorAll(".catsec").forEach((sec) => { const k = sec.querySelectorAll(".btl.on").length, sm = sec.querySelector(".cath small"); if (sm && k) sm.textContent = k + " sélectionné" + (k > 1 ? "s" : ""); });
+  }
+  function addOtherCat(cat) {
+    const inp = M.querySelector('[data-other-cat="' + CSS.escape(cat) + '"]'); if (!inp) return;
+    const label = inp.value.trim().replace(/\s+/g, " ").replace(/\s+-\s+/, " — ");
+    if (!label) { inp.focus(); return; }
+    current.planned = (current.planned || []).slice(); if (!current.planned.some((p) => p.ref === label)) { current.planned.push({ ref: label, cat }); markDirty(true); }
+    addCustomRef(cat, label);
+    refreshItems(); updateBadges();
+    const box = M.querySelector('.btl[data-ref="' + CSS.escape(label) + '"]'); if (box) box.scrollIntoView({ block: "center" });
+  }
+  function addOther(p) {
+    const inp = p.querySelector("[data-pother]"), label = inp.value.trim().replace(/\s+/g, " ");
+    const cat = p.querySelector("[data-pcat]").value || "Autre";
+    if (!label) { inp.focus(); return; }
+    addCustomRef(cat, label);
+    addItem(p.dataset.picker, cat, label);
+  }
+  function addItem(kind, cat, ref) {
+    if (current[kind].some((x) => x.ref === ref)) { toast("Déjà dans la liste"); }
+    else {
+      const it = { id: uid(), cat, ref, moment: "" };
+      if (kind === "tasting") { it.avis = ""; it.note = ""; current.done = true; }
+      current[kind].push(it);
+      markDirty(true);
+    }
+    refreshItems(kind);
+  }
+  function refreshItems(focusKind) {
+    const y = window.scrollY; renderFiche(); window.scrollTo(0, y);
+
+  }
+  async function deleteCouple(id) {
+    try {
+      couples = couples.filter((c) => c.id !== id); saveDoc("couples", id, null);
+      dirty = false; currentId = null; current = null; document.body.classList.remove("open");
+      toast("Couple supprimé"); renderList(); renderFiche();
+    } catch (e) { toast("Suppression impossible"); }
+  }
+
+  // ---------- ajout, import ----------
+  async function createCouples(list) {
+    const made = [];
+    for (const d of list) {
+      const c = blankCouple(d);
+      const id = uid(); couples.push(Object.assign({ id }, c)); made.push(id); saveDoc("couples", id, c);
+    }
+    renderList();
+    return made;
+  }
+  $("addBtn").addEventListener("click", async () => {
+    const ids = await createCouples([{}]);
+    if (ids[0]) { openCouple(ids[0]); const el = M.querySelector('[data-k="p1"]'); if (el) { el.scrollIntoView({ block: "center" }); el.focus(); } }
+  });
+  $("importBtn").addEventListener("click", () => { $("importZone").hidden = !$("importZone").hidden; if (!$("importZone").hidden) $("importText").focus(); });
+  $("importCancel").addEventListener("click", () => { $("importZone").hidden = true; });
+  $("importGo").addEventListener("click", async () => {
+    const lines = $("importText").value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const rows = lines.map((l) => l.split(/\t|;/).map((x) => x.trim()))
+      .filter((r, i) => !(i === 0 && /pr[ée]nom|nom|lieu/i.test(r.join(" ")) && !/\d/.test(r.join(""))));
+    if (!rows.length) { toast("Rien à importer"); return; }
+    const existing = new Set(couples.map((c) => coupleName(c).toLowerCase()));
+    const list = [];
+    rows.forEach((r) => {
+      let d;
+      if (r.length >= 5) d = { p1: cap(r[0]), n1: (r[1] || "").toUpperCase(), p2: cap(r[2]), n2: (r[3] || "").toUpperCase(), lieu: r[4] || "", date: normDate(r[5]) };
+      else d = { p1: r[0] || "", lieu: r[1] || "", date: normDate(r[2]) };
+      if (!existing.has(coupleName(d).toLowerCase())) { list.push(d); existing.add(coupleName(d).toLowerCase()); }
+    });
+    const before = couples.length;
+    await createCouples(list);
+    const n = couples.length - before, skipped = rows.length - list.length;
+    toast(n + " couple" + (n > 1 ? "s" : "") + " importé" + (n > 1 ? "s" : "") + (skipped ? " · " + skipped + " déjà présent" + (skipped > 1 ? "s" : "") : ""));
+    if (n) { $("importText").value = ""; $("importZone").hidden = true; }
+  });
+  function normDate(s) {
+    s = (s || "").trim(); if (!s) return "";
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return m[0];
+    m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/); if (m) { const y = m[3].length === 2 ? "20" + m[3] : m[3]; return y + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0"); }
+    return "";
+  }
+
+  // ---------- export ----------
+  const AV = (a) => (a && FACE[a] ? FACE[a][2] : "");
+  function table() {
+    const head = ["Prénom 1", "Nom 1", "Prénom 2", "Nom 2", "Lieu de réception", "Date", "Invités"].concat(MOMENTS.map((m) => m[1])).concat(["Besoin spiritueux", "Types de spiritueux", "Spiritueux (précisions)"]).concat(["Budget (enveloppe)", "Budget (montant €)"]).concat(BCATS.map((k) => "Prix visé " + k)).concat(["Remarques budget"]).concat(["Dégustation faite", "Vins prévus", "Coups de cœur", "Vins goûtés (impression · commentaire · moment)", "Sélection envisagée", "Notes"]);
+    const rows = couples.slice().sort((a, b) => (a.n1 || "").localeCompare(b.n1 || "", "fr")).map((c) => {
+      const t = c.tasting || [], s = c.selection || [];
+      return [c.p1, c.n1, c.p2, c.n2, c.lieu, c.date, c.invites]
+        .concat(MOMENTS.map((m) => { const v = (c.moments || {})[m[0]] || {}; return [v.s, v.inv ? v.inv + " pers." : ""].filter(Boolean).join(" · "); }))
+        .concat([c.spirit || "", (c.spiritTypes || []).map((t) => t + ((c.spiritPrix || {})[t] ? " (" + c.spiritPrix[t] + ")" : "")).join(", "), c.spiritNote || ""])
+        .concat((() => { const b = c.budget || {}, p = b.prix || {}; return [b.fourchette, b.total].concat(BCATS.map((k) => p[k] || "")).concat([b.note]); })())
+        .concat([isDone(c) ? "Oui" : "Non", (c.planned || []).map((p) => p.ref).join(" | "),
+          t.filter((x) => x.avis === "coeur").map((x) => x.ref).join(" | "),
+          t.map((x) => [x.ref, AV(x.avis), x.note, x.moment].filter(Boolean).join(" · ")).join(" | "),
+          s.map((x) => [x.ref, x.moment].filter(Boolean).join(" · ")).join(" | "),
+          c.notes]);
+    });
+    return [head].concat(rows);
+  }
+  $("exportBtn").addEventListener("click", async () => {
+    flush();
+    if (!couples.length) { toast("Rien à exporter"); return; }
+    const q = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+    const csv = "﻿" + table().map((r) => r.map(q).join(";")).join("\r\n");
+    try {
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      a.download = "salon-mariage-degustations-" + new Date().toISOString().slice(0, 10) + ".csv"; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); toast("Fichier exporté");
+    } catch (e) { copyTsv(); }
+  });
+  async function copyTsv() {
+    if (!couples.length) { toast("Rien à copier"); return; }
+    const tsv = table().map((r) => r.map((v) => String(v ?? "").replace(/[\t\r\n]+/g, " ")).join("\t")).join("\n");
+    try { await navigator.clipboard.writeText(tsv); toast("Copié : collez dans Google Sheets ou Excel"); $("copyZone").hidden = true; }
+    catch (e) { $("copyZone").hidden = false; $("copyBox").value = tsv; $("copyBox").focus(); $("copyBox").select(); }
+  }
+  $("copyBtn").addEventListener("click", () => { flush(); copyTsv(); });
+
+  $("list").addEventListener("click", (e) => { const r = e.target.closest(".crow"); if (r) openCouple(r.dataset.id); });
+  $("search").addEventListener("input", renderList);
+  $("filter").addEventListener("change", renderList);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) flush(); });
+
+  // ---------- synchronisation (API Cloudflare, hors ligne d'abord) ----------
+  const API = "https://carnet-salon-api.wandering-poetry-b31f.workers.dev/";
+  const K_KEY = "pdv-carnet-cle", K_CACHE = "pdv-carnet-cache-v1", K_PEND = "pdv-carnet-attente-v1";
+  function lsr(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
+  function lsw(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  var KEY = "", since = { couples: 0, refs: 0 }, pending = lsr(K_PEND) || {}, online = null, pushing = false, pulling = false;
+  (function () { const m = /cle=([a-z0-9-]+)/i.exec(location.hash); if (m) { lsw(K_KEY, m[1]); try { history.replaceState(null, "", location.pathname); } catch (e) {} } KEY = lsr(K_KEY) || ""; })();
+  function cacheSave() { lsw(K_CACHE, { couples, refs: customRefs, since }); }
+  const isTyping = () => { const a = document.activeElement; return !!(a && M.contains(a) && (a.tagName === "INPUT" || a.tagName === "TEXTAREA")); };
+  async function api(method, path, body) {
+    const r = await fetch(API + KEY + "/" + path, { method, headers: body ? { "Content-Type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined, cache: "no-store" });
+    if (r.status === 403) { const e = new Error("cle"); e.code = "cle"; throw e; }
+    if (!r.ok) throw new Error("http " + r.status);
+    return r.json();
+  }
+  function updateStatus() {
+    const n = Object.keys(pending).length;
+    if (!KEY) setStatus("warn", "Code d'accès manquant");
+    else if (online === false) setStatus("warn", "Hors ligne" + (n ? " · " + n + " modification" + (n > 1 ? "s" : "") + " à envoyer" : " · fiches gardées sur l'appareil"));
+    else if (n) setStatus("", "Envoi en cours…");
+    else if (online) setStatus("on", "Synchronisé sur tous vos appareils");
+    else setStatus("", "Connexion…");
+  }
+  function saveDoc(c, id, data) { pending[c + "/" + id] = { c, id, data }; lsw(K_PEND, pending); cacheSave(); updateStatus(); pushPending(); }
+  let retry = null;
+  async function pushPending() {
+    if (pushing || !KEY) return; pushing = true;
+    try {
+      for (const k of Object.keys(pending)) {
+        const p = pending[k];
+        if (p.data === null) await api("DELETE", p.c + "/" + encodeURIComponent(p.id));
+        else await api("PUT", p.c + "/" + encodeURIComponent(p.id), p.data);
+        if (pending[k] === p) { delete pending[k]; lsw(K_PEND, pending); }
+      }
+      online = true;
+    } catch (e) { if (e.code === "cle") askKey(true); else online = false; }
+    finally { pushing = false; updateStatus(); }
+    clearTimeout(retry); if (Object.keys(pending).length) retry = setTimeout(pushPending, 5000);
+  }
+  async function pull() {
+    if (!KEY || pulling) return; pulling = true;
+    try {
+      let changed = false, refsChanged = false;
+      for (const c of ["couples", "refs"]) {
+        const r = await api("GET", c + "?depuis=" + since[c]);
+        since[c] = Math.max(0, r.maintenant - 15000);
+        r.docs.forEach((d) => {
+          if (pending[c + "/" + d.id]) return;
+          const arr = c === "couples" ? couples : customRefs, i = arr.findIndex((x) => x.id === d.id);
+          if (d.deleted) { if (i >= 0) { arr.splice(i, 1); if (c === "couples") changed = true; else refsChanged = true; } return; }
+          const obj = Object.assign({ id: d.id }, d.data);
+          if (i >= 0) { if (JSON.stringify(arr[i]) === JSON.stringify(obj)) return; arr[i] = obj; } else arr.push(obj);
+          if (c === "couples") changed = true; else refsChanged = true;
+        });
+      }
+      online = true;
+      if (changed) applyRemote();
+      if (refsChanged && current && activeTab === "choix" && !isTyping()) refreshItems();
+      cacheSave();
+    } catch (e) { if (e.code === "cle") askKey(true); else online = false; }
+    finally { pulling = false; updateStatus(); }
+  }
+  function applyRemote() {
+    if (current) {
+      const fresh = couples.find((c) => c.id === currentId);
+      if (!fresh) { current = null; currentId = null; document.body.classList.remove("open"); renderFiche(); }
+      else if (!dirty && !saving && (fresh.updatedAt || 0) > (current.updatedAt || 0) && !isTyping()) { current = blankCouple(JSON.parse(JSON.stringify(fresh))); current.id = currentId; refreshItems(); }
+      const i = couples.findIndex((c) => c.id === currentId); if (i >= 0 && dirty) couples[i] = Object.assign({}, current);
+    }
+    renderList();
+  }
+  function askKey(bad) {
+    const b = $("banner"); b.hidden = false;
+    b.innerHTML = '<div style="display:grid;gap:8px"><strong>' + (bad ? "Code d'accès refusé." : "Première ouverture sur cet appareil.") + '</strong>Saisissez le code d\'accès du carnet pour retrouver les fiches partagées.' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="keyIn" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="xxxxx-xxxxx-xxxxx-xxxxx" style="flex:1 1 220px"><button type="button" class="primary" id="keyGo">Valider</button></div></div>';
+    const go = () => { const v = $("keyIn").value.trim().toLowerCase(); if (!v) return; KEY = v; lsw(K_KEY, v); since = { couples: 0, refs: 0 }; b.hidden = true; b.textContent = ""; online = null; updateStatus(); pull(); pushPending(); };
+    $("keyGo").addEventListener("click", go); $("keyIn").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  }
+  (function boot() {
+    const c = lsr(K_CACHE); if (c) { couples = c.couples || []; customRefs = c.refs || []; since = c.since || since; }
+    renderList(); updateStatus();
+    if (!KEY) { askKey(false); return; }
+    pull(); pushPending();
+  })();
+  setInterval(() => { if (!document.hidden) pull(); }, 5000);
+  window.addEventListener("online", () => { pushPending(); pull(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { pull(); pushPending(); } });
+})();
+</script>
+<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>
+</body>
+</html>
