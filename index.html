@@ -269,6 +269,42 @@ body.couple .deja { display: none; }
 .devs .devl b { color: var(--gold); font-size: 14px; }
 .devs .devl span { font-size: 12.5px; opacity: .85; }
 .fmeta a.devl { color: var(--brick); font-weight: 600; text-decoration: underline; }
+.warnl { color: var(--brick); font-size: 13px; font-weight: 600; margin: 0 0 10px; }
+.srows, .slines { display: grid; gap: 8px; margin-bottom: 8px; }
+.srow { display: grid; grid-template-columns: 6px minmax(0, 1fr) 92px 64px; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.srow .sw { width: 6px; align-self: stretch; border-radius: 3px; background: var(--band); }
+.sm1 { min-width: 0; display: grid; }
+.sm1 b { font-family: var(--display); font-size: 17px; font-weight: 600; line-height: 1.15; }
+.sm1 small { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.sin, .sq input, .stotal input { text-align: center; font-size: 17px; font-weight: 600; padding: 8px 6px; }
+.sin::placeholder, .sq input::placeholder, .stotal input::placeholder { color: var(--muted); opacity: .75; font-weight: 500; }
+.sbt { font-family: var(--display); font-size: 19px; font-weight: 600; text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+.sline { display: grid; grid-template-columns: 34px minmax(0, 1fr) 92px 72px 86px; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-left: 5px solid var(--band); border-radius: 10px; background: var(--surface); }
+.simg { width: 30px; height: 84px; object-fit: contain; }
+.sq { display: grid; gap: 2px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.sq input { width: 100%; }
+.spu { font-size: 14px; color: var(--muted); text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+.stot { font-family: var(--display); font-size: 19px; font-weight: 600; text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+.stotal { background: var(--brand); color: var(--brand-fg); border-radius: 14px; padding: 16px; }
+.stotal .hint { color: var(--brand-fg); opacity: .75; }
+.stotal .warnl { color: var(--gold); }
+.sgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 10px; }
+.sgrid > div { display: grid; gap: 3px; align-content: start; }
+.sgrid span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+.sgrid b { font-family: var(--display); font-size: 22px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.sgrid .big b { font-size: 32px; color: var(--gold); }
+.sgrid em { font-style: normal; font-size: 14px; font-variant-numeric: lining-nums tabular-nums; }
+.sgrid em.over { color: #ffb3a1; } .sgrid em.under { color: #cfe3a8; }
+.stotal input { max-width: 120px; background: rgba(255,255,255,.12); color: var(--brand-fg); border-color: rgba(255,255,255,.3); }
+@media (max-width: 600px) {
+  .sline { grid-template-columns: 26px minmax(0, 1fr) 70px 70px; }
+  .sline .spu { display: none; }
+  .simg { width: 24px; height: 66px; }
+  .srow { grid-template-columns: 5px minmax(0, 1fr) 70px 54px; gap: 8px; }
+}
+.madd { display: flex; gap: 8px; margin-top: 10px; }
+.madd input { flex: 1 1 auto; min-width: 0; }
+.stotal input::placeholder { color: var(--brand-fg); opacity: .6; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
 .dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
@@ -364,7 +400,7 @@ body.ovopen { overflow: hidden; }
         <input id="search" type="search" placeholder="Rechercher un couple…" aria-label="Rechercher">
         <select id="lieuF" aria-label="Filtrer par lieu"><option value="">Tous les lieux</option></select>
         <select id="filter" aria-label="Filtrer par statut">
-          <option value="all">Tous les couples</option><option value="rdv">Avec rendez-vous</option><option value="todo">À recevoir</option><option value="done">Dégustés</option><option value="vis">Visiteurs sans RDV</option>
+          <option value="all">Tous les couples</option><option value="rdv">Avec rendez-vous</option><option value="todo">À recevoir</option><option value="done">Dégustés</option><option value="vis">Visiteurs sans RDV</option><option value="h25">Rencontrés aux WSD 2025</option><option value="hist">Déjà en contact avec nous</option>
           <optgroup label="Reçus par"><option value="r:Thomas">Thomas</option><option value="r:Gautier">Gautier</option><option value="r:Méline">Méline</option></optgroup>
           <optgroup label="Intérêt"><option value="i:chaud">Chauds</option><option value="i:tiede">Tièdes</option><option value="i:froid">Froids</option></optgroup>
         </select>
@@ -428,6 +464,7 @@ body.ovopen { overflow: hidden; }
     ["soiree", "Soirée", ""],
     ["brunch", "Brunch lendemain", ""]
   ];
+  const MOM = (c) => MOMENTS.concat(((c && c.extraMoments) || []).map((e) => [e.k, e.l, e.d || "", true]));
   const MSTAT = ["", "Oui", "Non", "À confirmer"];
   const FORMATS = ["", "1 jour", "Week-end 2 jours", "Week-end 3 jours", "Plus de 3 jours", "Autre"];
   const BFOURCH = ["", "Moins de 1 000 €", "1 000 – 2 000 €", "2 000 – 3 000 €", "3 000 – 4 000 €", "4 000 – 4 500 €", "4 500 – 5 000 €", "5 000 – 8 000 €", "8 000 – 12 000 €", "Plus de 12 000 €", "Pas encore défini"];
@@ -504,7 +541,7 @@ body.ovopen { overflow: hidden; }
     $("sDone").textContent = couples.filter(isDone).length;
     const key = (c) => (c.rdvJour || "9999") + " " + (c.rdv || "99:99") + " " + simple(c.n1 || c.p1 || "");
     const sorted = couples.slice().sort((a, b) => key(a).localeCompare(key(b), "fr"));
-    const okF = (c) => f === "all" || (f === "done" && isDone(c)) || (f === "todo" && !isDone(c) && !isVisiteur(c)) || (f === "rdv" && !isVisiteur(c)) || (f === "vis" && isVisiteur(c)) || (f.startsWith("r:") && c.recu === f.slice(2)) || (f.startsWith("i:") && c.interet === f.slice(2));
+    const okF = (c) => f === "all" || (f === "done" && isDone(c)) || (f === "todo" && !isDone(c) && !isVisiteur(c)) || (f === "rdv" && !isVisiteur(c)) || (f === "h25" && c.wsd2025) || (f === "hist" && !!c.historique) || (f === "vis" && isVisiteur(c)) || (f.startsWith("r:") && c.recu === f.slice(2)) || (f.startsWith("i:") && c.interet === f.slice(2));
     const shown = sorted.filter((c) => okF(c) && (!lf || c.lieu === lf) && (!q || simple(coupleName(c) + " " + c.lieu + " " + (c.planner || "")).includes(q)));
     const L = $("list");
     if (!couples.length) { L.innerHTML = '<div class="empty"><div class="wm" style="width:90px;height:90px"></div><strong>Aucun rendez-vous</strong>Importez la liste des couples avant le salon, ou ajoutez-en un avec « + Nouveau couple ».</div>'; return; }
@@ -515,7 +552,7 @@ body.ovopen { overflow: hidden; }
       h += '<button type="button" class="crow' + (c.id === currentId ? " sel" : "") + '" data-id="' + esc(c.id) + '">' +
         '<span class="t' + (c.rdv ? "" : " none") + '">' + (c.rdv ? esc(c.rdv.replace(":", "h")) : "—") + '</span>' +
         '' +
-        '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + (c.historique ? ' <span class="deja">déjà en contact</span>' : "") + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
+        '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + (c.historique ? ' <span class="deja">' + (c.wsd2025 ? "vus aux WSD 2025" : "déjà en contact") + '</span>' : "") + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
         '<span class="rside"><span class="chip' + (isDone(c) ? " done" : isVisiteur(c) ? " vis" : "") + '">' + (isDone(c) ? "Dégusté" : isVisiteur(c) ? "Sans RDV" : "À recevoir") + '</span>' +
         ((c.recu || c.interet) ? '<span class="tags">' + (c.interet ? '<i class="int ' + esc(c.interet) + '" title="' + esc((INTERETS.find((x) => x[0] === c.interet) || [, ""])[1]) + '"></i>' : "") + (c.recu ? '<span class="ini" title="Reçus par ' + esc(c.recu) + '">' + esc(c.recu[0]) + '</span>' : "") + '</span>' : "") + '</span></button>';
     });
@@ -617,6 +654,109 @@ body.ovopen { overflow: hidden; }
       (notes.length ? '<ul class="estn">' + notes.map((x) => '<li>' + esc(x) + '</li>').join("") + '</ul>' : "") +
       '<p class="hint">Ratios Pépites de vin pour des buveurs normaux : cocktail 2,5 verres de bulles, 1,5 de rosé et 6 bouteilles de rouge ; dîner 1,5 de blanc et 1,5 de rouge ; dessert 1 verre de bulles. 6 verres par bouteille.</p></section>';
   }
+  // ---------- Simulation des quantités et du budget ----------
+  // Frais de livraison TTC appliqués aux clients en 2025 (Bilan des commandes 2025) ; Esperelle : pas d'historique.
+  const LIVRAISON = { "Le Clos du Tuilier": 160, "Le Mas de Florette": 150, "La Bastide des Barattes": 130 };
+  const SCOLS = [["bulles", "Bulles", ["Champagne", "Bulles"]], ["rose", "Rosé", ["Rosé"]], ["blanc", "Blanc", ["Blanc"]], ["rouge", "Rouge", ["Rouge"]]];
+  const SCOLOF = (cat) => (SCOLS.find((x) => x[2].includes(cat)) || [""])[0];
+  const pnum = (v) => { const x = parseFloat(String(v == null ? "" : v).replace(/\s/g, "").replace(",", ".").replace(/[^\d.]/g, "")); return isFinite(x) ? x : NaN; };
+  const fmtE = (x) => (Math.round(x * 100) / 100).toLocaleString("fr-FR", { minimumFractionDigits: x % 1 ? 2 : 0, maximumFractionDigits: 2 }) + " €";
+  function simuWines(c) {
+    const sel = c.selection || [], tas = c.tasting || [];
+    const base = sel.length ? sel.map((k) => ({ ref: k.ref, cat: k.cat, t: tas.find((t) => t.ref === k.ref), k })) :
+      tas.filter((t) => t.avis === "coeur" || t.avis === "aime").map((t) => ({ ref: t.ref, cat: t.cat, t, k: null }));
+    return { from: sel.length ? "sel" : "aime", list: base.filter((w) => SCOLOF(w.cat)).map((w) => Object.assign(w, { col: SCOLOF(w.cat), mos: momentsOf(w.t, w.k) })) };
+  }
+  function simuDefault(mk, col, c, wines) {
+    if (mk === "cocktail") return { bulles: "2,5", rose: "1,5", rouge: "6 btl" }[col] || "";
+    if (mk === "diner") { if (col === "blanc") return "1,5"; if (col === "rouge") return wines.some((w) => w.col === "blanc" && w.mos.includes("Dîner")) ? "1,5" : "2"; return ""; }
+    if (mk === "dessert") return col === "bulles" ? "1" : "";
+    if (mk === "brunch") return "6 btl";
+    if (mk === "dejeuner") return { blanc: "1,5", rouge: "2" }[col] || "";
+    return "";
+  }
+  function simuCalc(c) {
+    const S = c.simu || {}, R = S.r || {}, Q = S.q || {}, P = S.p || {};
+    const { from, list } = simuWines(c);
+    const rows = [], per = new Map(list.map((w) => [w.ref, 0])), missing = [];
+    MOM(c).forEach((m) => {
+      const st = ((c.moments || {})[m[0]] || {});
+      if (!st.s || st.s === "Non") return;
+      const n = parseInt(st.inv || c.invites, 10) || 0;
+      SCOLS.forEach(([ck, cl]) => {
+        const ws = list.filter((w) => w.col === ck && w.mos.includes(m[1]));
+        if (!ws.length) return;
+        const dk = m[3] && /d[ée]jeuner/i.test(m[1]) ? "dejeuner" : m[0];
+        const key = m[0] + "." + ck, raw = R[key] != null && R[key] !== "" ? R[key] : simuDefault(dk, ck, c, list);
+        const forfait = /b/i.test(String(raw)), v = pnum(raw);
+        let btl = 0;
+        if (isFinite(v) && v > 0) btl = forfait ? v : (n ? Math.ceil(n * v / 6) : 0);
+        rows.push({ key, mk: m[0], ml: m[1], ck, cl, n, raw, def: simuDefault(dk, ck, c, list), forfait, btl, ws });
+        ws.forEach((w) => per.set(w.ref, per.get(w.ref) + btl / ws.length));
+      });
+    });
+    let bottles = 0, vins = 0, noPrice = 0;
+    const lines = list.map((w) => {
+      const calc = Math.ceil((per.get(w.ref) || 0) / 6) * 6, ov = Q[w.ref], q = ov != null && ov !== "" ? Math.max(0, Math.round(pnum(ov) || 0)) : calc;
+      const m = META.get(w.ref), cat = m && m.prix ? pnum(m.prix[0]) : NaN, pu = isFinite(pnum(P[w.ref])) ? pnum(P[w.ref]) : cat;
+      if (!isFinite(pu) && q) noPrice++;
+      if (!w.mos.length) missing.push(w.ref);
+      bottles += q; vins += isFinite(pu) ? pu * q : 0;
+      return { w, calc, q, ov: ov != null && ov !== "", pu, catPrice: isFinite(cat) };
+    });
+    const livDef = LIVRAISON[c.lieu], liv = S.liv != null && S.liv !== "" ? pnum(S.liv) : livDef;
+    const total = vins + (isFinite(liv) ? liv : 0);
+    const inv = parseInt(c.invites, 10) || 0;
+    const sp = c.spirit && c.spirit !== "Non" && inv ? Math.ceil(inv / 6) : 0;
+    return { from, list, rows, lines, bottles, vins, liv, livDef, total: bottles ? total : 0, inv, missing, noPrice, sp };
+  }
+  function simuPanel(c) {
+    const r = simuCalc(c), S = c.simu || {};
+    if (!r.list.length) return '<div class="none" style="display:grid;gap:12px;justify-items:start">Aucun vin retenu pour l\'instant. Dans l\'onglet Dégustation, touchez ★ sur les vins choisis (ou notez « Coup de cœur » / « Aime ») et indiquez leurs moments.<button type="button" class="primary" data-gotab="degustation">Aller à la dégustation</button></div>';
+    const actives = MOM(c).filter((m) => { const st = (c.moments || {})[m[0]] || {}; return st.s && st.s !== "Non"; });
+    let h = '<p class="hint" style="margin:2px 0 12px">' + (r.from === "sel" ? "Vins retenus ★" : "Aucun vin retenu ★ : simulation sur les vins notés « Coup de cœur » et « Aime »") + ' · ' + r.inv + ' invités' + (actives.length ? "" : ' · <b>aucun moment renseigné dans l\'onglet Mariage</b>') + '</p>';
+    if (r.missing.length) h += '<p class="warnl">Moment à préciser dans Dégustation pour : ' + r.missing.map((x) => esc(splitRef(x)[1])).join(", ") + '</p>';
+    // Ratios par moment
+    if (r.rows.length) {
+      h += '<section class="blk"><h3>Quantités par moment <small>verres par personne, ou « 6 btl » pour un forfait</small></h3><div class="srows">' +
+        r.rows.map((x) => '<div class="srow" style="' + ccVars(x.ck === "bulles" ? "Champagne" : x.cl) + '"><span class="sw"></span><div class="sm1"><b>' + esc(x.ml) + ' · ' + esc(x.cl) + '</b><small>' + x.n + ' pers. · ' + x.ws.map((w) => esc(splitRef(w.ref)[1])).join(" / ") + '</small></div>' +
+          '<input class="sin" inputmode="decimal" data-sr="' + esc(x.key) + '" value="' + esc(S.r && S.r[x.key] != null ? S.r[x.key] : "") + '" placeholder="' + esc(x.def || "à saisir") + '" aria-label="Ratio ' + esc(x.ml + " " + x.cl) + '">' +
+          '<span class="sbt">' + (x.btl ? x.btl + ' btl' : '<em>—</em>') + '</span></div>').join("") + '</div>' +
+        '<p class="hint">Valeurs grisées = ratios Pépites de vin (cocktail 2,5 bulles, 1,5 rosé, 6 btl de rouge ; dîner 1,5 blanc, rouge 2 ou 1,5 avec un blanc ; dessert 1 bulles ; brunch 6 btl par couleur). Welcome dinner et soirée : à saisir. 6 verres par bouteille.</p></section>';
+    }
+    // Lignes par vin
+    h += '<section class="blk"><h3>Sélection chiffrée <small>tarif catalogue, cartons de 6</small></h3><div class="slines">' +
+      r.lines.map((l) => { const [d, cu] = splitRef(l.w.ref); return '<div class="sline" style="' + ccVars(l.w.cat) + '">' + bottle(l.w.ref, "simg") +
+        '<div class="sm1"><small>' + esc(d) + '</small><b>' + esc(cu) + '</b><small>' + (l.w.mos.length ? esc(l.w.mos.join(", ")) : '<span class="warnl">moment ?</span>') + '</small></div>' +
+        '<label class="sq"><span>Bouteilles</span><input inputmode="numeric" data-sq="' + esc(l.w.ref) + '" value="' + (l.ov ? esc(String(S.q[l.w.ref])) : "") + '" placeholder="' + l.calc + '"></label>' +
+        (l.catPrice ? '<span class="spu">' + fmtE(l.pu) + '</span>' : '<label class="sq"><span>Prix</span><input inputmode="decimal" data-sp="' + esc(l.w.ref) + '" value="' + esc((S.p || {})[l.w.ref] || "") + '" placeholder="€"></label>') +
+        '<span class="stot">' + (isFinite(l.pu) ? fmtE(l.pu * l.q) : "—") + '</span></div>'; }).join("") + '</div>' +
+      '<p class="hint">Quantité grisée = calcul automatique (arrondi au carton) ; tapez un nombre pour forcer.</p></section>';
+    // Totaux
+    const bud = pnum((c.budget || {}).total);
+    h += '<section class="blk stotal"><div class="sgrid">' +
+      '<div><span>Vins</span><b>' + r.bottles + ' btl · ' + Math.ceil(r.bottles / 6) + ' cartons</b><em>' + fmtE(r.vins) + '</em></div>' +
+      '<div><span>Livraison ' + esc(c.lieu || "") + '</span><input inputmode="decimal" data-sliv value="' + esc(S.liv != null ? S.liv : "") + '" placeholder="' + (isFinite(r.livDef) ? r.livDef : "à saisir") + '"><em>' + (isFinite(r.liv) ? fmtE(r.liv) : "à chiffrer") + '</em></div>' +
+      '<div class="big"><span>Total TTC</span><b>' + fmtE(r.vins + (isFinite(r.liv) ? r.liv : 0)) + '</b><em>' + (r.inv ? "soit " + fmtE((r.vins + (isFinite(r.liv) ? r.liv : 0)) / r.inv) + " par invité" : "") + '</em></div>' +
+      (isFinite(bud) && bud > 0 ? '<div><span>Budget annoncé</span><b>' + fmtE(bud) + '</b><em class="' + ((r.vins + (r.liv || 0)) > bud ? "over" : "under") + '">' + ((r.vins + (r.liv || 0)) > bud ? "+" : "−") + fmtE(Math.abs(r.vins + (r.liv || 0) - bud)) + '</em></div>' : "") +
+      '</div>' + (r.noPrice ? '<p class="warnl">' + r.noPrice + ' vin(s) sans prix catalogue : saisissez le prix pour le compter.</p>' : "") +
+      (r.sp ? '<p class="hint">Spiritueux en plus : environ ' + r.sp + ' bouteilles au global (1 pour 6 personnes), non chiffrés ici.</p>' : "") +
+      '<p class="hint">Simulation indicative, buveurs normaux. Livraison : tarif appliqué en 2025 pour ce lieu' + (isFinite(r.livDef) ? "" : " (aucun historique : à saisir)") + '.</p></section>';
+    return h;
+  }
+  let simuTimer = null;
+  function refreshSimu() {
+    clearTimeout(simuTimer);
+    simuTimer = setTimeout(() => {
+      if (activeTab !== "simu" || !current) return;
+      const a = document.activeElement, key = a && a.dataset ? ["sr", "sq", "sp"].find((k) => k in a.dataset) : null, val = key ? a.dataset[key] : null, liv = a && a.dataset && "sliv" in a.dataset, pos = a && a.selectionStart;
+      $("simuPanel").innerHTML = simuPanel(current); updateBadges();
+      let el = null;
+      if (key) el = [...$("simuPanel").querySelectorAll("[data-" + key + "]")].find((x) => x.dataset[key] === val);
+      else if (liv) el = $("simuPanel").querySelector("[data-sliv]");
+      if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} }
+    }, 450);
+  }
   function tasteList(c) {
     const out = [], seen = new Set();
     const add = (ref, cat) => { if (!seen.has(ref)) { seen.add(ref); out.push({ ref, cat }); } };
@@ -631,8 +771,8 @@ body.ovopen { overflow: hidden; }
     return m ? m.split(/\s*,\s*/) : [];
   }
   function tastePanel(c) {
-    const list = tasteList(c), momentsOpts = MOMENTS.map((m) => m[1]);
-    const removedMoments = new Set(MOMENTS.filter((m) => ((c.moments || {})[m[0]] || {}).s === "Non").map((m) => m[1]));
+    const list = tasteList(c), momentsOpts = MOM(c).map((m) => m[1]);
+    const removedMoments = new Set(MOM(c).filter((m) => ((c.moments || {})[m[0]] || {}).s === "Non").map((m) => m[1]));
     if (!list.length) return '<div class="none" style="display:grid;gap:12px;justify-items:start">Aucun vin prévu pour ce couple.<button type="button" class="primary" data-gotab="choix">Choisir les vins à goûter</button></div>';
     const tBy = new Map(c.tasting.map((t) => [t.ref, t])), sBy = new Map(c.selection.map((x) => [x.ref, x]));
     const done = list.filter((x) => (tBy.get(x.ref) || {}).avis).length;
@@ -649,14 +789,15 @@ body.ovopen { overflow: hidden; }
     }).join("");
     return h;
   }
-  const TABS = [["mariage", "Mariage"], ["choix", "Vins à goûter"], ["degustation", "Dégustation"], ["notes", "Suivi"]];
+  const TABS = [["mariage", "Mariage"], ["choix", "Vins à goûter"], ["degustation", "Dégustation"], ["simu", "Simulation"], ["notes", "Suivi"]];
   let activeTab = "mariage", editIdentity = false;
-  const tabLabel = (t) => t[0] === "choix" ? '<span class="lg">Vins à goûter</span><span class="sm">À goûter</span>' : esc(t[1]);
+  const tabLabel = (t) => t[0] === "choix" ? '<span class="lg">Vins à goûter</span><span class="sm">À goûter</span>' : t[0] === "simu" ? '<span class="lg">Simulation</span><span class="sm">Simu</span>' : t[0] === "degustation" ? '<span class="lg">Dégustation</span><span class="sm">Dégust.</span>' : esc(t[1]);
   function tabBadge(k, c) {
     if (k === "choix") return (c.planned || []).length ? String(c.planned.length) : "";
     if (k === "degustation") { const tot = tasteList(c).length, n = c.tasting.filter((t) => t.avis).length; return tot ? n + "/" + tot : ""; }
-    if (k === "mariage") { const n = MOMENTS.filter((m) => ((c.moments || {})[m[0]] || {}).s === "Oui").length; return n ? String(n) : ""; }
+    if (k === "mariage") { const n = MOM(c).filter((m) => ((c.moments || {})[m[0]] || {}).s === "Oui").length; return n ? String(n) : ""; }
     if (k === "budget") { const b = c.budget || {}; return (b.total || b.fourchette) ? "€" : ""; }
+    if (k === "simu") { const r = simuCalc(c); return r.total ? Math.round(r.total).toLocaleString("fr-FR") + " €" : ""; }
     if (k === "notes" && c.historique && !c.interet) return "Historique";
     if (k === "notes") return c.interet ? (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1] : (c.notes ? "•" : "");
     return "";
@@ -666,7 +807,7 @@ body.ovopen { overflow: hidden; }
     if (!current) { M.innerHTML = '<div class="empty"><div class="wm"></div><strong>Choisissez un rendez-vous</strong>Touchez un couple dans la liste pour ouvrir sa fiche.</div>'; return; }
     const c = current;
     const mom = (k) => (c.moments && c.moments[k]) || {};
-    const momentsOpts = MOMENTS.map((m) => m[1]);
+    const momentsOpts = MOM(c).map((m) => m[1]);
     const b = c.budget || {}, bp = b.prix || {};
     const perHead = (() => { const t = parseFloat(String(b.total || "").replace(/\s/g, "").replace(",", ".")), n = parseInt(c.invites, 10); return t > 0 && n > 0 ? Math.round(t / n) : 0; })();
     const show = (k) => (activeTab === k ? "" : " hidden");
@@ -698,15 +839,16 @@ body.ovopen { overflow: hidden; }
       '<div class="tabpanel"' + show("mariage") + '><section class="blk"><h3>Le mariage</h3><div class="cols">' +
       '<label class="f">Invités<input inputmode="numeric" data-k="invites" value="' + esc(c.invites) + '" placeholder="ex. 120"></label>' +
       '</div>' +
-      '<div class="moments">' + MOMENTS.filter((m) => mom(m[0]).s !== "Non").map((m) => {
+      '<div class="moments">' + MOM(c).filter((m) => mom(m[0]).s !== "Non").map((m) => {
         const v = mom(m[0]);
         return '<div class="mrow mrow4"><div class="mn">' + esc(m[1]) + (m[2] ? "<small>" + esc(m[2]) + "</small>" : "") + '</div>' +
           '<select data-m="' + m[0] + '" data-mf="s" aria-label="' + esc(m[1]) + '" class="' + (v.s ? "set" : "") + '">' + opts(["", "Oui", "À confirmer"], v.s || "", "—") + '</select>' +
-          '<input inputmode="numeric" data-m="' + m[0] + '" data-mf="inv" class="' + (v.inv && v.auto ? "auto" : "") + '" value="' + esc(v.inv || "") + '" placeholder="' + (v.s === "Non" ? "—" : "pers.") + '" aria-label="Personnes ' + esc(m[1]) + '"><button type="button" class="mrm" data-mrm="' + m[0] + '" aria-label="Retirer ' + esc(m[1]) + '" title="Pas de ' + esc(m[1].toLowerCase()) + '">−</button></div>';
+          '<input inputmode="numeric" data-m="' + m[0] + '" data-mf="inv" class="' + (v.inv && v.auto ? "auto" : "") + '" value="' + esc(v.inv || "") + '" placeholder="' + (v.s === "Non" ? "—" : "pers.") + '" aria-label="Personnes ' + esc(m[1]) + '"><button type="button" class="mrm" data-mrm="' + m[0] + '" aria-label="Retirer ' + esc(m[1]) + '" title="Pas de ' + esc(m[1].toLowerCase()) + '"' + (m[3] ? ' data-mextra="1"' : "") + '>−</button></div>';
       }).join("") + '</div>' +
-      (MOMENTS.some((m) => mom(m[0]).s === "Non") ? '<div class="mchips" style="margin-top:8px"><span class="hint">Remettre un moment retiré par erreur :</span>' + MOMENTS.filter((m) => mom(m[0]).s === "Non").map((m) => '<button type="button" class="mchip" data-mrestore="' + m[0] + '">+ ' + esc(m[1]) + '</button>').join("") + '</div>' : "") +
+      '<div class="madd"><input id="maddL" placeholder="Ajouter un moment (ex. Déjeuner vendredi midi)" autocapitalize="sentences"><button type="button" class="ghost small" id="maddB">+ Ajouter</button></div>' +
+      (MOM(c).some((m) => mom(m[0]).s === "Non") ? '<div class="mchips" style="margin-top:8px"><span class="hint">Remettre un moment retiré par erreur :</span>' + MOM(c).filter((m) => mom(m[0]).s === "Non").map((m) => '<button type="button" class="mchip" data-mrestore="' + m[0] + '">+ ' + esc(m[1]) + '</button>').join("") + '</div>' : "") +
       '</section>' +
-      '<div id="estim">' + estimHtml(c) + '</div>' +
+      '<div id="estim"></div>' +
 
       '<section class="blk"><h3>Spiritueux</h3><div class="cols">' +
       '<label class="f">Besoin en spiritueux<select data-k="spirit" class="' + (c.spirit ? "set" : "") + '">' + opts(MSTAT, c.spirit || "", "—") + '</select></label>' +
@@ -729,6 +871,7 @@ body.ovopen { overflow: hidden; }
       // ----- Dégustation
       '<div class="tabpanel"' + show("choix") + '>' + (activeTab === "choix" ? planPanel(c) : "") + '</div>' +
       '<div class="tabpanel"' + show("degustation") + '>' + (activeTab === "degustation" ? tastePanel(c) : "") + '</div>' +
+      '<div class="tabpanel" id="simuPanel"' + show("simu") + '>' + (activeTab === "simu" ? simuPanel(c) : "") + '</div>' +
 
       // ----- Budget
 
@@ -808,6 +951,14 @@ body.ovopen { overflow: hidden; }
   const M = $("main");
   M.addEventListener("input", (e) => {
     const el = e.target; if (!current) return;
+    if (el.dataset.sr != null || el.dataset.sq != null || el.dataset.sp != null || "sliv" in el.dataset) {
+      const S = current.simu = Object.assign({ r: {}, q: {}, p: {} }, current.simu);
+      if (el.dataset.sr != null) { S.r = Object.assign({}, S.r, { [el.dataset.sr]: el.value }); if (el.value === "") delete S.r[el.dataset.sr]; }
+      else if (el.dataset.sq != null) { S.q = Object.assign({}, S.q, { [el.dataset.sq]: el.value }); if (el.value === "") delete S.q[el.dataset.sq]; }
+      else if (el.dataset.sp != null) { S.p = Object.assign({}, S.p, { [el.dataset.sp]: el.value }); if (el.value === "") delete S.p[el.dataset.sp]; }
+      else S.liv = el.value;
+      markDirty(); refreshSimu(); return;
+    }
     if (el.dataset.k && el.type !== "checkbox" && el.tagName !== "SELECT") {
       current[el.dataset.k] = el.value; markDirty();
       if (el.dataset.k === "invites") syncMomentInvites();
@@ -861,6 +1012,7 @@ body.ovopen { overflow: hidden; }
     const k = el.dataset.k; if (["date", "rdv", "rdvJour", "email", "tel"].includes(k)) return; const v = k === "n1" || k === "n2" ? el.value.trim().replace(/\s+/g, " ").toUpperCase() : k === "lieu" ? el.value.trim().replace(/\s+/g, " ") : cap(el.value);
     if (v !== current[k]) { current[k] = v; el.value = v; markDirty(true); $("fName").textContent = coupleName(current); }
   });
+  M.addEventListener("keydown", (e) => { if (e.target.id === "maddL" && e.key === "Enter") { e.preventDefault(); addMoment(); } });
   M.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && "ident" in e.target.dataset) { e.preventDefault(); const all = [...M.querySelectorAll("[data-ident]")]; const i = all.indexOf(e.target); if (i < all.length - 1) all[i + 1].focus(); else e.target.blur(); return; }
     if (e.key === "Enter" && e.target.dataset.otherCat) { e.preventDefault(); addOtherCat(e.target.dataset.otherCat); return; }
@@ -903,6 +1055,12 @@ body.ovopen { overflow: hidden; }
     if ("face" in b.dataset && b.closest(".tcard")) {
       const t = ensureTasting(b.closest(".tcard")); t.avis = t.avis === b.dataset.face ? "" : b.dataset.face; markDirty(true); refreshItems(); updateBadges(); return;
     }
+    if (b.id === "maddB") { addMoment(); return; }
+    if (b.dataset.mrm && b.dataset.mextra) {
+      const k = b.dataset.mrm; current.extraMoments = (current.extraMoments || []).filter((e) => e.k !== k);
+      current.moments = Object.assign({}, current.moments); delete current.moments[k];
+      markDirty(true); refreshItems(); updateBadges(); return;
+    }
     if (b.dataset.mrm || b.dataset.mrestore) {
       const key = b.dataset.mrm || b.dataset.mrestore; current.moments = Object.assign({}, current.moments);
       const m = Object.assign({}, current.moments[key]);
@@ -914,7 +1072,7 @@ body.ovopen { overflow: hidden; }
       const card = b.closest(".tcard"), t = ensureTasting(card), k = current.selection.find((x) => x.ref === card.dataset.ref);
       const arr = momentsOf(t, k).slice(), i = arr.indexOf(b.dataset.wm);
       if (i >= 0) arr.splice(i, 1); else arr.push(b.dataset.wm);
-      const order = MOMENTS.map((m) => m[1]); arr.sort((a, z) => order.indexOf(a) - order.indexOf(z));
+      const order = MOM(current).map((m) => m[1]); arr.sort((a, z) => order.indexOf(a) - order.indexOf(z));
       t.moments = arr; t.moment = arr.join(", "); if (k) k.moment = t.moment;
       b.classList.toggle("on", i < 0); b.setAttribute("aria-pressed", String(i < 0)); markDirty(true); return;
     }
@@ -944,9 +1102,17 @@ body.ovopen { overflow: hidden; }
       deleteCouple(currentId);
     }
   });
+  function addMoment() {
+    const el = $("maddL"), l = (el && el.value || "").trim().replace(/\s+/g, " ");
+    if (!l) { if (el) el.focus(); return; }
+    const k = "x" + Date.now().toString(36);
+    current.extraMoments = (current.extraMoments || []).concat([{ k, l: l.charAt(0).toUpperCase() + l.slice(1) }]);
+    current.moments = Object.assign({}, current.moments, { [k]: { s: "Oui", inv: current.invites || "", auto: true } });
+    markDirty(true); refreshItems(); updateBadges();
+  }
   function syncMomentInvites() {
     let changed = false; current.moments = Object.assign({}, current.moments);
-    MOMENTS.forEach((mm) => {
+    MOM(current).forEach((mm) => {
       const m = Object.assign({}, current.moments[mm[0]]);
       if (m.s === "Non") return;
       if (!m.inv || m.auto) {
