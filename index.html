@@ -259,6 +259,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
 @media (prefers-reduced-motion: no-preference) { .toast { animation: rise .18s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } } }
 
 .kpis b, .est, .stat b, .crow .t { font-variant-numeric: lining-nums tabular-nums; }
+.chip.vis { color: var(--line-2); border-style: dashed; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
 .dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
@@ -354,7 +355,7 @@ body.ovopen { overflow: hidden; }
         <input id="search" type="search" placeholder="Rechercher un couple…" aria-label="Rechercher">
         <select id="lieuF" aria-label="Filtrer par lieu"><option value="">Tous les lieux</option></select>
         <select id="filter" aria-label="Filtrer par statut">
-          <option value="all">Tous les statuts</option><option value="todo">À recevoir</option><option value="done">Dégustés</option>
+          <option value="all">Tous les couples</option><option value="rdv">Avec rendez-vous</option><option value="todo">À recevoir</option><option value="done">Dégustés</option><option value="vis">Visiteurs sans RDV</option>
           <optgroup label="Reçus par"><option value="r:Thomas">Thomas</option><option value="r:Gautier">Gautier</option><option value="r:Méline">Méline</option></optgroup>
           <optgroup label="Intérêt"><option value="i:chaud">Chauds</option><option value="i:tiede">Tièdes</option><option value="i:froid">Froids</option></optgroup>
         </select>
@@ -461,6 +462,7 @@ body.ovopen { overflow: hidden; }
     return (c.lieu ? '<span class="venue">' + esc(c.lieu) + '</span>' : "") + (c.date ? '<span>Mariage le ' + esc(fmtShortDate(c.date)) + '</span>' : "") +
       ((c.rdv || jour) ? '<span class="rdv">RDV ' + esc([jour, c.rdv ? c.rdv.replace(":", "h") : ""].filter(Boolean).join(" à ")) + '</span>' : "") +
       (c.recu ? '<span class="who">Reçus par ' + esc(c.recu) + '</span>' : "") +
+      ((c.cherche || []).includes("Boissons") ? '<span class="who">Cherchent un prestataire boissons</span>' : "") +
       (c.planner ? '<span>Planner : ' + esc(c.planner) + '</span>' : "") + (c.traiteur ? '<span>Traiteur : ' + esc(c.traiteur) + '</span>' : "");
   }
   const fmtDate = (d) => { if (!d) return ""; const x = new Date(d + "T12:00"); return isNaN(x) ? d : "Mariage le " + x.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); };
@@ -468,6 +470,7 @@ body.ovopen { overflow: hidden; }
     const a = [c.p1, c.n1].filter(Boolean).join(" "), b = [c.p2, c.n2].filter(Boolean).join(" ");
     return [a, b].filter(Boolean).join(" & ") || "Couple sans nom";
   };
+  const isVisiteur = (c) => c.source === "WSD" && !c.rdv && !(typeof c.done === "boolean" ? c.done : !!(c.tasting && c.tasting.length));
   const isDone = (c) => (typeof c.done === "boolean" ? c.done : !!(c.tasting && c.tasting.length));
   function blankCouple(d) {
     return Object.assign({ p1: "", n1: "", p2: "", n2: "", lieu: "", date: "", rdv: "", rdvJour: "", recu: "", email: "", tel: "", planner: "", traiteur: "", interet: "", action: "", invites: "", format: "", moments: {}, selection: [], tasting: [], planned: [], budget: {}, notes: "", done: false, createdAt: Date.now() }, d || {});
@@ -486,11 +489,11 @@ body.ovopen { overflow: hidden; }
   const dayLabel = (d) => { const t = d ? new Date(d + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "Sans rendez-vous fixé"; return t.charAt(0).toUpperCase() + t.slice(1); };
   function renderList() {
     const q = simple($("search").value.trim()), f = $("filter").value, lf = $("lieuF").value;
-    $("sAll").textContent = couples.length;
+    $("sAll").textContent = couples.filter((c) => !isVisiteur(c)).length;
     $("sDone").textContent = couples.filter(isDone).length;
     const key = (c) => (c.rdvJour || "9999") + " " + (c.rdv || "99:99") + " " + simple(c.n1 || c.p1 || "");
     const sorted = couples.slice().sort((a, b) => key(a).localeCompare(key(b), "fr"));
-    const okF = (c) => f === "all" || (f === "done" && isDone(c)) || (f === "todo" && !isDone(c)) || (f.startsWith("r:") && c.recu === f.slice(2)) || (f.startsWith("i:") && c.interet === f.slice(2));
+    const okF = (c) => f === "all" || (f === "done" && isDone(c)) || (f === "todo" && !isDone(c) && !isVisiteur(c)) || (f === "rdv" && !isVisiteur(c)) || (f === "vis" && isVisiteur(c)) || (f.startsWith("r:") && c.recu === f.slice(2)) || (f.startsWith("i:") && c.interet === f.slice(2));
     const shown = sorted.filter((c) => okF(c) && (!lf || c.lieu === lf) && (!q || simple(coupleName(c) + " " + c.lieu + " " + (c.planner || "")).includes(q)));
     const L = $("list");
     if (!couples.length) { L.innerHTML = '<div class="empty"><div class="wm" style="width:90px;height:90px"></div><strong>Aucun rendez-vous</strong>Importez la liste des couples avant le salon, ou ajoutez-en un avec « + Nouveau couple ».</div>'; return; }
@@ -501,7 +504,7 @@ body.ovopen { overflow: hidden; }
       h += '<button type="button" class="crow' + (c.id === currentId ? " sel" : "") + '" data-id="' + esc(c.id) + '">' +
         '<span class="t' + (c.rdv ? "" : " none") + '">' + (c.rdv ? esc(c.rdv.replace(":", "h")) : "—") + '</span>' +
         '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
-        '<span class="rside"><span class="chip' + (isDone(c) ? " done" : "") + '">' + (isDone(c) ? "Dégusté" : "À recevoir") + '</span>' +
+        '<span class="rside"><span class="chip' + (isDone(c) ? " done" : isVisiteur(c) ? " vis" : "") + '">' + (isDone(c) ? "Dégusté" : isVisiteur(c) ? "Sans RDV" : "À recevoir") + '</span>' +
         ((c.recu || c.interet) ? '<span class="tags">' + (c.interet ? '<i class="int ' + esc(c.interet) + '" title="' + esc((INTERETS.find((x) => x[0] === c.interet) || [, ""])[1]) + '"></i>' : "") + (c.recu ? '<span class="ini" title="Reçus par ' + esc(c.recu) + '">' + esc(c.recu[0]) + '</span>' : "") + '</span>' : "") + '</span></button>';
     });
     L.innerHTML = h;
@@ -726,7 +729,7 @@ body.ovopen { overflow: hidden; }
 
   function renderBilan() {
     flush(); currentId = null; current = null; document.body.classList.add("open"); renderList();
-    const M = $("main"), n = couples.length, done = couples.filter(isDone).length;
+    const M = $("main"), n = couples.filter((c) => !isVisiteur(c)).length, done = couples.filter(isDone).length;
     const cnt = {}, love = {};
     couples.forEach((c) => (c.tasting || []).forEach((t) => { cnt[t.ref] = (cnt[t.ref] || 0) + 1; if (t.avis === "coeur" || t.avis === "aime") love[t.ref] = (love[t.ref] || 0) + (t.avis === "coeur" ? 2 : 1); }));
     const top = Object.keys(love).sort((a, b) => love[b] - love[a] || (cnt[b] || 0) - (cnt[a] || 0)).slice(0, 10);
