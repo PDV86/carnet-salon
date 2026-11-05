@@ -539,9 +539,9 @@ body.ovopen { overflow: hidden; }
   function catPills(counter) {
     return CATS.map((cat) => { const n = counter(cat); return '<button type="button" class="pill' + (catFilter === cat ? " on" : "") + '" data-catf="' + esc(cat) + '" style="' + ccVars(cat) + '"><span class="sw"></span>' + esc(cat) + (n ? ' <span class="n">' + n + '</span>' : "") + '</button>'; }).join("");
   }
-  const TARIFS = [["A", "Tarif A"], ["B", "Tarif B"], ["C", "Tarif C"], ["", "Sans prix"]];
   let regionFilter = { Blanc: "", Rouge: "" };
-  function prixOf(w, c) { const m = META.get(w), t = c.tarif === undefined ? "A" : c.tarif; if (!m || !t || !m.prix) return ""; const v = m.prix["ABC".indexOf(t)]; return v ? v + " €" : ""; }
+  // Salon : tarif A uniquement.
+  function prixOf(w) { const m = META.get(w); if (!m || !m.prix) return ""; const v = m.prix[0]; return v ? v + " €" : ""; }
   function bottleCard(w, cat, c, planned) {
     const [dom, cuv] = splitRef(w), on = planned.has(w), px = prixOf(w, c);
     return '<div class="btl' + (on ? " on" : "") + '" data-ref="' + esc(w) + '" data-cat="' + esc(cat) + '"><button type="button" class="btap" data-plan aria-pressed="' + on + '">' + bottle(w, "bimg") +
@@ -549,11 +549,9 @@ body.ovopen { overflow: hidden; }
   }
   function planPanel(c) {
     const planned = new Set((c.planned || []).map((p) => p.ref));
-    const tar = c.tarif === undefined ? "A" : c.tarif;
     let h = '<div class="catbar">' + catPills((cat) => (c.planned || []).filter((p) => p.cat === cat).length) +
       '<div class="vf">' + [["all", "Tout le catalogue"], ["sel", "Sélectionnés (" + planned.size + ")"]].map((v) => '<button type="button" data-vf="' + v[0] + '" class="' + (viewFilter === v[0] ? "on" : "") + '">' + v[1] + '</button>').join("") + '</div></div>' +
-      '<div class="tarifs"><span class="hint">Prix affichés</span><div class="vf">' + TARIFS.map((t) => '<button type="button" data-tarif="' + t[0] + '" class="' + (tar === t[0] ? "on" : "") + '">' + t[1] + '</button>').join("") + '</div></div>' +
-      '<p class="legend">Touchez les bouteilles à faire goûter au couple. « Fiche ↗ » ouvre la fiche dégustation du vin.</p>';
+      '<p class="legend">Touchez les bouteilles à faire goûter au couple. « Fiche » ouvre la fiche dégustation du vin.</p>';
     let shown = 0;
     CATS.filter((cat) => !catFilter || cat === catFilter).forEach((cat) => {
       let wines = winesOf(cat, c);
@@ -871,7 +869,6 @@ body.ovopen { overflow: hidden; }
       if (arr.length && !current.spirit) { current.spirit = "Oui"; const sel = M.querySelector('[data-k="spirit"]'); }
       markDirty(true); refreshItems(); return;
     }
-    if (b.dataset.tarif !== undefined) { current.tarif = b.dataset.tarif; markDirty(true); refreshItems(); return; }
     if (b.dataset.regcat) { regionFilter[b.dataset.regcat] = b.dataset.reg; refreshItems(); return; }
     if (b.dataset.catf) { catFilter = catFilter === b.dataset.catf ? "" : b.dataset.catf; refreshItems(); return; }
     if (b.dataset.vf) { viewFilter = b.dataset.vf; refreshItems(); return; }
