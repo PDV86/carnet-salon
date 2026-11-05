@@ -309,6 +309,14 @@ body.couple .deja { display: none; }
 .fmeta .nomail { color: var(--brick); font-style: italic; }
 .mrow.mrow3 { grid-template-columns: minmax(0, 1fr) 96px 40px; }
 @media (max-width: 480px) { .mrow.mrow3 { grid-template-columns: minmax(0, 1fr) 76px 36px; padding-left: 10px; } }
+.lnote { display: grid; gap: 4px; margin: 4px 0 16px; }
+.lnote label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brick); }
+.lnote textarea { min-height: 58px; font-size: 15px; background: var(--accent-soft); border-color: var(--line); }
+.dpar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 2px 0 12px; }
+.dpar .hint { margin-right: 4px; }
+.lnsum { display: grid; gap: 10px; }
+.lnsum b { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--brick); }
+.lnsum p { margin: 2px 0 0; white-space: pre-wrap; font-size: 15px; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
 .dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
@@ -455,6 +463,8 @@ body.ovopen { overflow: hidden; }
   };
   const SPRIX = ["", "Moins de 25 €", "25 – 35 €", "35 – 50 €", "50 – 70 €", "Plus de 70 €"];
   const EQUIPE = ["Thomas", "Gautier", "Méline"];
+  const DEGUSTEURS = ["Gautier", "Méline", "Tom"];
+  const degustParHtml = (c) => '<div class="dpar"><span class="hint">Dégustation faite par</span>' + DEGUSTEURS.map((n) => '<button type="button" class="mchip' + (c.degustePar === n ? " on" : "") + '" data-dpar="' + n + '">' + n + '</button>').join("") + '</div>';
   const INTERETS = [["chaud", "Chaud"], ["tiede", "Tiède"], ["froid", "Froid"]];
   const ACTIONS = ["", "Envoyer un devis", "Envoyer le catalogue", "Rappeler", "Organiser une nouvelle dégustation", "Attendre leur retour", "Rien à faire"];
   const SPIRIT_TYPES = ["Gin", "Vodka", "Whisky", "Bourbon", "Rhum", "Tequila", "Digestif", "Autre"];
@@ -512,6 +522,7 @@ body.ovopen { overflow: hidden; }
     return (c.lieu ? '<span class="venue">' + esc(c.lieu) + '</span>' : "") + (c.date ? '<span>Mariage le ' + esc(fmtShortDate(c.date)) + '</span>' : "") +
       ((c.rdv || jour) ? '<span class="rdv">RDV ' + esc([jour, c.rdv ? c.rdv.replace(":", "h") : ""].filter(Boolean).join(" à ")) + '</span>' : "") +
       (c.recu ? '<span class="who">Reçus par ' + esc(c.recu) + '</span>' : "") +
+      (c.degustePar ? '<span class="who">Dégustation : ' + esc(c.degustePar) + '</span>' : "") +
       (c.historique ? '<span class="who">Déjà en contact avec nous</span>' : "") +
       (!c.email ? '<span class="who nomail">E-mail à demander</span>' : "") +
       (c.devis || []).map((d) => '<a class="who devl" href="' + esc(d.url) + '" target="_blank" rel="noopener">Devis ' + esc(d.num) + ' ↗</a>').join("") +
@@ -673,7 +684,7 @@ body.ovopen { overflow: hidden; }
     return { from: sel.length ? "sel" : "aime", list: base.filter((w) => SCOLOF(w.cat)).map((w) => Object.assign(w, { col: SCOLOF(w.cat), mos: momentsOf(w.t, w.k) })) };
   }
   function simuDefault(mk, col, c, wines) {
-    if (mk === "cocktail") return { bulles: "2,5", rose: "1,5", rouge: "6 btl" }[col] || "";
+    if (mk === "cocktail") return { bulles: "3", rose: "1", rouge: "6 btl" }[col] || "";
     if (mk === "diner") { if (col === "blanc") return "1,5"; if (col === "rouge") return wines.some((w) => w.col === "blanc" && w.mos.includes("Dîner")) ? "1,5" : "2"; return ""; }
     if (mk === "dessert") return col === "bulles" ? "1" : "";
     if (mk === "brunch") return "6 btl";
@@ -727,7 +738,7 @@ body.ovopen { overflow: hidden; }
         r.rows.map((x) => '<div class="srow" style="' + ccVars(x.ck === "bulles" ? "Champagne" : x.cl) + '"><span class="sw"></span><div class="sm1"><b>' + esc(x.ml) + ' · ' + esc(x.cl) + '</b><small>' + x.n + ' pers. · ' + x.ws.map((w) => esc(splitRef(w.ref)[1])).join(" / ") + '</small></div>' +
           '<input class="sin" inputmode="decimal" data-sr="' + esc(x.key) + '" value="' + esc(S.r && S.r[x.key] != null ? S.r[x.key] : "") + '" placeholder="' + esc(x.def || "à saisir") + '" aria-label="Ratio ' + esc(x.ml + " " + x.cl) + '">' +
           '<span class="sbt">' + (x.btl ? x.btl + ' btl' : '<em>—</em>') + '</span></div>').join("") + '</div>' +
-        '<p class="hint">Valeurs grisées = ratios Pépites de vin (cocktail 2,5 bulles, 1,5 rosé, 6 btl de rouge ; dîner 1,5 blanc, rouge 2 ou 1,5 avec un blanc ; dessert 1 bulles ; brunch 6 btl par couleur). Welcome dinner et soirée : à saisir. 6 verres par bouteille.</p></section>';
+        '<p class="hint">Valeurs grisées = ratios Pépites de vin (cocktail 3 bulles, 1 rosé, 6 btl de rouge ; dîner 1,5 blanc, rouge 2 ou 1,5 avec un blanc ; dessert 1 bulles ; brunch 6 btl par couleur). Welcome dinner et soirée : à saisir. 6 verres par bouteille.</p></section>';
     }
     // Lignes par vin
     h += '<section class="blk"><h3>Sélection chiffrée <small>tarif catalogue, cartons de 6</small></h3><div class="slines">' +
@@ -794,6 +805,8 @@ body.ovopen { overflow: hidden; }
     }).join("");
     return h;
   }
+  const NOTEF = { mariage: ["noteMariage", "Notes en direct", "Déroulé, contraintes, menu…"], choix: ["noteGouts", "Goûts et envies", "Régions aimées, pas trop tannique, passionnés de vin…"], degustation: ["noteDegust", "Notes en direct", "Ce qui ressort de la dégustation…"], simu: ["noteSimu", "Notes en direct", "Remarques sur les quantités, le budget…"] };
+  const liveNote = (c, tab) => { const f = NOTEF[tab]; return '<div class="lnote"><label>' + esc(f[1]) + '</label><textarea rows="2" data-k="' + f[0] + '" placeholder="' + esc(f[2]) + '">' + esc(c[f[0]] || "") + '</textarea></div>'; };
   const TABS = [["mariage", "Mariage"], ["choix", "Vins à goûter"], ["degustation", "Dégustation"], ["simu", "Simulation"], ["notes", "Suivi"]];
   let activeTab = "mariage", editIdentity = false;
   const tabLabel = (t) => t[0] === "choix" ? '<span class="lg">Vins à goûter</span><span class="sm">À goûter</span>' : t[0] === "simu" ? '<span class="lg">Simulation</span><span class="sm">Simu</span>' : t[0] === "degustation" ? '<span class="lg">Dégustation</span><span class="sm">Dégust.</span>' : esc(t[1]);
@@ -804,7 +817,7 @@ body.ovopen { overflow: hidden; }
     if (k === "budget") { const b = c.budget || {}; return (b.total || b.fourchette) ? "€" : ""; }
     if (k === "simu") { const r = simuCalc(c); return r.total ? Math.round(r.total).toLocaleString("fr-FR") + " €" : ""; }
     if (k === "notes" && c.historique && !c.interet) return "Historique";
-    if (k === "notes") return c.interet ? (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1] : (c.notes ? "•" : "");
+    if (k === "notes") return c.interet ? (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1] : ((c.notes || c.noteMariage || c.noteGouts || c.noteDegust || c.noteSimu) ? "•" : "");
     return "";
   }
   function renderFiche() {
@@ -841,7 +854,7 @@ body.ovopen { overflow: hidden; }
       '<div class="tabs" role="tablist">' + TABS.map((t) => { const n = tabBadge(t[0], c); return '<button type="button" role="tab" class="tab' + (activeTab === t[0] ? " on" : "") + '" aria-selected="' + (activeTab === t[0]) + '" data-tab="' + t[0] + '">' + tabLabel(t) + (n ? ' <span class="badge">' + esc(n) + '</span>' : "") + '</button>'; }).join("") + '</div>' +
 
       // ----- Mariage
-      '<div class="tabpanel"' + show("mariage") + '><section class="blk"><h3>Le mariage</h3><div class="cols">' +
+      '<div class="tabpanel"' + show("mariage") + '>' + liveNote(c, "mariage") + '<section class="blk"><h3>Le mariage</h3><div class="cols">' +
       '<label class="f">Invités<input inputmode="numeric" data-k="invites" value="' + esc(c.invites) + '" placeholder="ex. 120"></label>' +
       '<label class="f">E-mail des mariés<input type="email" inputmode="email" autocapitalize="off" autocomplete="off" spellcheck="false" data-k="email" value="' + esc(c.email || "") + '" placeholder="pour leur envoyer le récap"></label>' +
       '<label class="f">Téléphone<input type="tel" inputmode="tel" autocomplete="off" data-k="tel" value="' + esc(c.tel || "") + '" placeholder="06…"></label>' +
@@ -875,9 +888,9 @@ body.ovopen { overflow: hidden; }
       '<section class="blk"><h3>Remarques budget</h3><textarea data-b="note" placeholder="Priorités, postes à réduire, parents qui participent…">' + esc(b.note || "") + '</textarea></section></div>' +
 
       // ----- Dégustation
-      '<div class="tabpanel"' + show("choix") + '>' + (activeTab === "choix" ? planPanel(c) : "") + '</div>' +
-      '<div class="tabpanel"' + show("degustation") + '>' + (activeTab === "degustation" ? tastePanel(c) : "") + '</div>' +
-      '<div class="tabpanel" id="simuPanel"' + show("simu") + '>' + (activeTab === "simu" ? simuPanel(c) : "") + '</div>' +
+      '<div class="tabpanel"' + show("choix") + '>' + liveNote(c, "choix") + (activeTab === "choix" ? planPanel(c) : "") + '</div>' +
+      '<div class="tabpanel"' + show("degustation") + '>' + degustParHtml(c) + liveNote(c, "degustation") + (activeTab === "degustation" ? tastePanel(c) : "") + '</div>' +
+      '<div class="tabpanel"' + show("simu") + '>' + liveNote(c, "simu") + '<div id="simuPanel">' + (activeTab === "simu" ? simuPanel(c) : "") + '</div></div>' +
 
       // ----- Budget
 
@@ -889,7 +902,9 @@ body.ovopen { overflow: hidden; }
         '<section class="blk"><h3>Suivi commercial <small>interne, masqué en mode couple</small></h3>' +
         '<div class="mchips"><span class="hint">Intérêt du couple</span>' + INTERETS.map((x) => '<button type="button" class="mchip intp ' + x[0] + (c.interet === x[0] ? " on" : "") + '" data-int="' + x[0] + '">' + x[1] + '</button>').join("") + '</div>' +
         '<div class="cols"><label class="f">Prochaine action<select data-k="action" class="' + (c.action ? "set" : "") + '">' + opts(ACTIONS, c.action || "", "—") + '</select></label></div></section>' +
-        '<section class="blk"><h3>Notes</h3><textarea data-k="notes" placeholder="Menu, goûts, contraintes, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
+        (["noteMariage", "noteGouts", "noteDegust", "noteSimu"].some((k) => c[k]) ? '<section class="blk"><h3>Notes prises pendant le rendez-vous</h3><div class="lnsum">' +
+          [["noteMariage", "Mariage"], ["noteGouts", "Goûts et envies"], ["noteDegust", "Dégustation"], ["noteSimu", "Simulation"]].filter((x) => c[x[0]]).map((x) => '<div><b>' + x[1] + '</b><p>' + esc(c[x[0]]) + '</p></div>').join("") + '</div></section>' : "") +
+        '<section class="blk"><h3>Notes internes</h3><textarea data-k="notes" placeholder="Menu, goûts, contraintes, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
       '</div>';
   }
 
@@ -1036,6 +1051,7 @@ body.ovopen { overflow: hidden; }
       renderFiche(); window.scrollTo(0, 0); return;
     }
     if (b.dataset.fiche) { openFiche(b.dataset.fiche, b.dataset.fname); return; }
+    if (b.dataset.dpar) { current.degustePar = current.degustePar === b.dataset.dpar ? "" : b.dataset.dpar; markDirty(true); refreshItems(); return; }
     if (b.dataset.int) { current.interet = current.interet === b.dataset.int ? "" : b.dataset.int; markDirty(true); refreshItems(); updateBadges(); return; }
     if (b.id === "identDone") { editIdentity = false; flush(); renderFiche(); return; }
     if (b.dataset.tab) { activeTab = b.dataset.tab; const y = window.scrollY; renderFiche(); window.scrollTo(0, Math.min(y, M.offsetTop)); return; }
@@ -1255,7 +1271,7 @@ body.ovopen { overflow: hidden; }
   // ---------- export ----------
   const AV = (a) => (a && FACE[a] ? FACE[a][2] : "");
   function table() {
-    const head = ["Jour RDV", "Heure RDV", "Reçus par", "Prénom 1", "Nom 1", "Prénom 2", "Nom 2", "E-mail", "Téléphone", "Lieu de réception", "Date", "Wedding planner", "Traiteur", "Intérêt", "Prochaine action", "Invités"].concat(MOMENTS.map((m) => m[1])).concat(["Besoin spiritueux", "Types de spiritueux", "Spiritueux (précisions)"]).concat(["Budget (enveloppe)", "Budget (montant €)"]).concat(BCATS.map((k) => "Prix visé " + k)).concat(["Remarques budget"]).concat(["Dégustation faite", "Vins prévus", "Coups de cœur", "Vins goûtés (impression · commentaire · moment)", "Sélection envisagée", "Notes"]);
+    const head = ["Jour RDV", "Heure RDV", "Reçus par", "Prénom 1", "Nom 1", "Prénom 2", "Nom 2", "E-mail", "Téléphone", "Lieu de réception", "Date", "Wedding planner", "Traiteur", "Intérêt", "Prochaine action", "Invités"].concat(MOMENTS.map((m) => m[1])).concat(["Besoin spiritueux", "Types de spiritueux", "Spiritueux (précisions)"]).concat(["Budget (enveloppe)", "Budget (montant €)"]).concat(BCATS.map((k) => "Prix visé " + k)).concat(["Remarques budget"]).concat(["Dégustation faite", "Vins prévus", "Coups de cœur", "Vins goûtés (impression · commentaire · moment)", "Sélection envisagée", "Notes", "Dégustation faite par"]);
     const rows = couples.slice().sort((a, b) => ((a.rdv || "99:99") + simple(a.n1)).localeCompare((b.rdv || "99:99") + simple(b.n1), "fr")).map((c) => {
       const t = c.tasting || [], s = c.selection || [];
       return [c.rdvJour || "", c.rdv || "", c.recu || "", c.p1, c.n1, c.p2, c.n2, c.email || "", c.tel || "", c.lieu, c.date, c.planner || "", c.traiteur || "", (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1], c.action || "", c.invites]
@@ -1266,7 +1282,7 @@ body.ovopen { overflow: hidden; }
           t.filter((x) => x.avis === "coeur").map((x) => x.ref).join(" | "),
           t.map((x) => [x.ref, AV(x.avis), x.note, x.moment].filter(Boolean).join(" · ")).join(" | "),
           s.map((x) => [x.ref, x.moment].filter(Boolean).join(" · ")).join(" | "),
-          c.notes]);
+          [c.noteMariage && "Mariage : " + c.noteMariage, c.noteGouts && "Goûts : " + c.noteGouts, c.noteDegust && "Dégustation : " + c.noteDegust, c.noteSimu && "Simulation : " + c.noteSimu, c.notes].filter(Boolean).join(" / "), c.degustePar || ""]);
     });
     return [head].concat(rows);
   }
