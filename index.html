@@ -142,7 +142,8 @@ label.f input, label.f select, label.f textarea { text-transform: none; letter-s
 .venue::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
 .rdv { font-weight: 600; color: var(--fg); }
 .linkbtn { border: 0; background: none; padding: 4px 0 2px; color: var(--brick); font-weight: 600; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; }
-.fside { display: grid; gap: 8px; justify-items: end; }
+.fside { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: flex-start; flex: 1 1 100%; }
+.fside .saved { order: 3; margin-left: auto; }
 .saved { font-size: 12px; color: var(--muted); }
 .donet { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 6px; border-radius: 99px; border: 1px solid var(--line-2); font-size: 14px; font-weight: 600; cursor: pointer; user-select: none; }
 .donet input { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 1.5px solid var(--line-2); border-radius: 50%; margin: 0; padding: 0; background: transparent; display: grid; place-items: center; }
@@ -256,11 +257,69 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
 .copybox { min-height: 110px; font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--brand); color: var(--brand-fg); border: 1px solid var(--gold); padding: 11px 18px 9px; border-radius: 99px; font-weight: 600; font-size: 14px; z-index: 20; max-width: calc(100% - 32px); box-shadow: var(--shadow); }
 @media (prefers-reduced-motion: no-preference) { .toast { animation: rise .18s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } } }
+
+.kpis b, .est, .stat b, .crow .t { font-variant-numeric: lining-nums tabular-nums; }
+/* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
+button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
+.dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); text-transform: capitalize; border-top: 1px solid var(--line); background: var(--sunk); }
+.dayh:first-child { border-top: 0; }
+.rside { display: grid; justify-items: end; gap: 5px; }
+.tags { display: flex; gap: 5px; align-items: center; }
+.ini { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--brand); color: var(--brand-fg); padding-top: 1px; }
+.int { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.int.chaud { background: #8d4535; } .int.tiede { background: #fab03b; } .int.froid { background: #9fb3c8; }
+.fmeta .who { color: var(--brick); font-weight: 600; }
+.intp.chaud.on { background: #8d4535; border-color: #8d4535; color: #fff; }
+.intp.tiede.on { background: #fab03b; border-color: #fab03b; color: #183300; }
+.intp.froid.on { background: #9fb3c8; border-color: #9fb3c8; color: #183300; }
+.blk h3 small { font-family: var(--body); font-size: 11.5px; font-weight: 400; color: var(--muted); letter-spacing: 0; text-transform: none; margin-left: 6px; }
+.estw { overflow-x: auto; }
+.est { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin: 4px 0 10px; }
+.est th, .est td { padding: 8px 10px 6px; border-bottom: 1px solid var(--line); text-align: center; font-size: 15px; }
+.est thead th { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.est thead .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--band); margin-right: 5px; vertical-align: -1px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.est tbody th, .est tfoot th { text-align: left; font-family: var(--display); font-size: 17px; font-weight: 600; }
+.est th small { display: block; font-family: var(--body); font-size: 11.5px; font-weight: 400; color: var(--muted); }
+.est td { font-family: var(--display); font-size: 20px; font-weight: 600; }
+.est tfoot th, .est tfoot td { border-bottom: 0; border-top: 2px solid var(--gold); color: var(--brick); }
+.estn { margin: 0 0 8px; padding-left: 18px; font-size: 14px; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 6px 0 18px; }
+.kpis > div { background: var(--sunk); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 10px; }
+.kpis b { display: block; font-family: var(--display); font-size: 30px; font-weight: 600; line-height: 1; color: var(--brand); }
+.kpis span { font-size: 12.5px; color: var(--muted); }
+.topw { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+.topw li span:first-child { font-family: var(--display); font-size: 18px; font-weight: 600; }
+.topw li small { display: block; font-family: var(--body); font-size: 12px; font-weight: 400; color: var(--muted); }
+.topw li { display: list-item; } .topw .sc { float: right; font-size: 13px; color: var(--muted); }
+.actg { display: grid; gap: 8px; margin-bottom: 10px; }
+.actg > strong { font-size: 14px; } .actg > strong small { color: var(--muted); font-weight: 400; }
+.actg > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.blink { border-radius: 99px; padding: 6px 12px 4px; font-size: 14px; background: var(--surface); border: 1px solid var(--line); color: var(--fg); }
+.lrow { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.lrow b { font-weight: 600; color: var(--muted); }
+.cbtn { border-radius: 99px; padding: 7px 14px 5px; font-size: 13px; font-weight: 700; background: var(--gold); color: #183300; border: 0; white-space: nowrap; }
+body.couple .cbtn { background: var(--brand); color: var(--brand-fg); }
+body.couple .fmeta .who, body.couple .side, body.couple .hstats, body.couple #identEdit, body.couple .tarifs, body.couple .tab[data-tab="notes"], body.couple .back, body.couple .donet, body.couple #saved, body.couple .rm { display: none !important; }
+body.couple .grid { grid-template-columns: 1fr !important; }
+body.couple .main { display: block !important; }
+.ov { position: fixed; inset: 0; z-index: 40; background: rgba(24, 51, 0, .55); display: grid; grid-template-rows: auto 1fr; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+.ov[hidden] { display: none; }
+.ovbar { display: flex; align-items: center; gap: 10px; background: var(--brand); color: var(--brand-fg); padding: 10px 14px 8px; border-radius: 14px 14px 0 0; }
+.ovbar strong { flex: 1; min-width: 0; font-family: var(--display); font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ovbar a { color: var(--gold); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.ovbar button { background: var(--gold); color: #183300; border: 0; border-radius: 99px; padding: 7px 14px 5px; font-weight: 700; font-size: 13px; }
+.ov iframe { width: 100%; height: 100%; border: 0; background: #fff; border-radius: 0 0 14px 14px; }
+body.ovopen { overflow: hidden; }
+@media (max-width: 600px) { .ovbar a { display: none; } .est th, .est td { padding: 7px 5px 5px; } .est td { font-size: 17px; } }
 .tab .sm { display: none; }
 @media (max-width: 600px) { .tab .lg { display: none; } .tab .sm { display: inline; } }
 
 @media (max-width: 600px) {
-  .fside { grid-auto-flow: column; justify-content: space-between; align-items: center; width: 100%; }
+  .fside { justify-content: flex-start; width: 100%; }
+  .fside .saved { flex-basis: auto; order: 0; text-align: left; }
+  .est thead th { font-size: 10px; letter-spacing: 0; padding: 6px 2px 4px; }
+  .est thead .sw { display: block; margin: 0 auto 3px; }
+  .est tbody th, .est tfoot th { font-size: 15px; padding-right: 4px; }
   .tab { flex: 1 1 auto; justify-content: center; padding: 11px 3px 8px; font-size: 13px; gap: 3px; letter-spacing: 0; }
   .tab .badge { min-width: 0; padding: 1px 5px 0; font-size: 10px; }
   .tabs { gap: 0; }
@@ -284,6 +343,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
       <div class="toolbar">
         <button type="button" class="primary" id="addBtn">+ Nouveau couple</button>
         <button type="button" id="importBtn">Importer</button>
+        <button type="button" id="bilanBtn">Bilan</button>
         <details class="more"><summary class="btnlike">Exporter ▾</summary><div class="menu">
           <button type="button" id="exportBtn">Fichier CSV (Excel)</button>
           <button type="button" id="copyBtn">Copier pour Google Sheets</button>
@@ -294,12 +354,14 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
         <select id="lieuF" aria-label="Filtrer par lieu"><option value="">Tous les lieux</option></select>
         <select id="filter" aria-label="Filtrer par statut">
           <option value="all">Tous les statuts</option><option value="todo">À recevoir</option><option value="done">Dégustés</option>
+          <optgroup label="Reçus par"><option value="r:Thomas">Thomas</option><option value="r:Gautier">Gautier</option><option value="r:Méline">Méline</option></optgroup>
+          <optgroup label="Intérêt"><option value="i:chaud">Chauds</option><option value="i:tiede">Tièdes</option><option value="i:froid">Froids</option></optgroup>
         </select>
       </div>
       <div class="panel list" id="list"></div>
       <div class="panel import" id="importZone" hidden>
         <strong>Importer les rendez-vous</strong>
-        <p class="hint">Copiez les lignes depuis Excel ou Google Sheets, une ligne par couple, dans cet ordre : Prénom 1 · Nom 1 · Prénom 2 · Nom 2 · Lieu de réception · Date du mariage · Heure du RDV (facultative). Le lieu est reconnu même abrégé (« Tuilier », « Florette »…). Une ligne d'en-tête est ignorée.</p>
+        <p class="hint">Copiez les lignes depuis Excel ou Google Sheets, en-têtes compris : les colonnes sont reconnues par leur nom (prénom, nom, lieu, date du mariage, heure, jour du RDV, mail, téléphone, wedding planner, traiteur, reçu par). Sans en-tête, l'ordre attendu est : Prénom 1 · Nom 1 · Prénom 2 · Nom 2 · Lieu · Date du mariage · Heure du RDV · Jour du RDV · Mail · Téléphone · Planner · Reçu par. Le lieu est reconnu même abrégé (« Tuilier », « Florette »…).</p>
         <textarea id="importText" placeholder="Camille	MARTIN	Hugo	BERNARD	Clos du Tuilier	12/06/2027	10h30"></textarea>
         <div class="tools"><button type="button" class="primary" id="importGo">Importer</button><button type="button" class="ghost" id="importCancel">Fermer</button></div>
       </div>
@@ -341,6 +403,9 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
     "Autre": { cc: "#D3B0AB", band: "#BC8E86", ink: "#500E19" }
   };
   const SPRIX = ["", "Moins de 25 €", "25 – 35 €", "35 – 50 €", "50 – 70 €", "Plus de 70 €"];
+  const EQUIPE = ["Thomas", "Gautier", "Méline"];
+  const INTERETS = [["chaud", "Chaud"], ["tiede", "Tiède"], ["froid", "Froid"]];
+  const ACTIONS = ["", "Envoyer un devis", "Envoyer le catalogue", "Rappeler", "Organiser une nouvelle dégustation", "Attendre leur retour", "Rien à faire"];
   const SPIRIT_TYPES = ["Gin", "Vodka", "Whisky", "Bourbon", "Rhum", "Tequila", "Digestif", "Autre"];
   const ccVars = (cat) => { const k = CATCOL[cat] || CATCOL.Autre; return "--cc:" + k.cc + ";--band:" + k.band + ";--ink:" + k.ink; };
   const CATS = ["Champagne", "Bulles", "Blanc", "Rosé", "Rouge", "Spiritueux", "Autre"];
@@ -391,7 +456,11 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   }
   const fmtShortDate = (d) => { if (!d) return ""; const x = new Date(d + "T12:00"); return isNaN(x) ? d : x.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", year: "numeric" }); };
   function metaHtml(c) {
-    return (c.lieu ? '<span class="venue">' + esc(c.lieu) + '</span>' : "") + (c.date ? '<span>Mariage le ' + esc(fmtShortDate(c.date)) + '</span>' : "") + (c.rdv ? '<span class="rdv">RDV ' + esc(c.rdv.replace(":", "h")) + '</span>' : "");
+    const jour = c.rdvJour ? new Date(c.rdvJour + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "";
+    return (c.lieu ? '<span class="venue">' + esc(c.lieu) + '</span>' : "") + (c.date ? '<span>Mariage le ' + esc(fmtShortDate(c.date)) + '</span>' : "") +
+      ((c.rdv || jour) ? '<span class="rdv">RDV ' + esc([jour, c.rdv ? c.rdv.replace(":", "h") : ""].filter(Boolean).join(" à ")) + '</span>' : "") +
+      (c.recu ? '<span class="who">Reçus par ' + esc(c.recu) + '</span>' : "") +
+      (c.planner ? '<span>Planner : ' + esc(c.planner) + '</span>' : "") + (c.traiteur ? '<span>Traiteur : ' + esc(c.traiteur) + '</span>' : "");
   }
   const fmtDate = (d) => { if (!d) return ""; const x = new Date(d + "T12:00"); return isNaN(x) ? d : "Mariage le " + x.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); };
   const coupleName = (c) => {
@@ -400,7 +469,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   };
   const isDone = (c) => (typeof c.done === "boolean" ? c.done : !!(c.tasting && c.tasting.length));
   function blankCouple(d) {
-    return Object.assign({ p1: "", n1: "", p2: "", n2: "", lieu: "", date: "", rdv: "", invites: "", format: "", moments: {}, selection: [], tasting: [], planned: [], budget: {}, notes: "", done: false, createdAt: Date.now() }, d || {});
+    return Object.assign({ p1: "", n1: "", p2: "", n2: "", lieu: "", date: "", rdv: "", rdvJour: "", recu: "", email: "", tel: "", planner: "", traiteur: "", interet: "", action: "", invites: "", format: "", moments: {}, selection: [], tasting: [], planned: [], budget: {}, notes: "", done: false, createdAt: Date.now() }, d || {});
   }
   function refsFor(cat) {
     const base = (CATALOGUE[cat] || []).slice();
@@ -413,20 +482,28 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
     return cats.length ? '<div class="dots">' + cats.map((cat) => '<span class="cdot" title="' + esc(cat) + '" style="' + ccVars(cat) + '"></span>').join("") + '</div>' : "";
   }
   // ---------- liste ----------
+  const dayLabel = (d) => d ? new Date(d + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "Jour non précisé";
   function renderList() {
     const q = simple($("search").value.trim()), f = $("filter").value, lf = $("lieuF").value;
     $("sAll").textContent = couples.length;
     $("sDone").textContent = couples.filter(isDone).length;
-    const key = (c) => (c.rdv || "99:99") + " " + simple(c.n1 || c.p1 || "");
+    const key = (c) => (c.rdvJour || "9999") + " " + (c.rdv || "99:99") + " " + simple(c.n1 || c.p1 || "");
     const sorted = couples.slice().sort((a, b) => key(a).localeCompare(key(b), "fr"));
-    const shown = sorted.filter((c) => (f === "all" || (f === "done") === isDone(c)) && (!lf || c.lieu === lf) && (!q || simple(coupleName(c) + " " + c.lieu).includes(q)));
+    const okF = (c) => f === "all" || (f === "done" && isDone(c)) || (f === "todo" && !isDone(c)) || (f.startsWith("r:") && c.recu === f.slice(2)) || (f.startsWith("i:") && c.interet === f.slice(2));
+    const shown = sorted.filter((c) => okF(c) && (!lf || c.lieu === lf) && (!q || simple(coupleName(c) + " " + c.lieu + " " + (c.planner || "")).includes(q)));
     const L = $("list");
     if (!couples.length) { L.innerHTML = '<div class="empty"><div class="wm" style="width:90px;height:90px"></div><strong>Aucun rendez-vous</strong>Importez la liste des couples avant le salon, ou ajoutez-en un avec « + Nouveau couple ».</div>'; return; }
     if (!shown.length) { L.innerHTML = '<div class="empty">Aucun couple ne correspond.</div>'; return; }
-    L.innerHTML = shown.map((c) => '<button type="button" class="crow' + (c.id === currentId ? " sel" : "") + '" data-id="' + esc(c.id) + '">' +
-      '<span class="t' + (c.rdv ? "" : " none") + '">' + (c.rdv ? esc(c.rdv.replace(":", "h")) : "—") + '</span>' +
-      '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
-      '<span class="chip' + (isDone(c) ? " done" : "") + '">' + (isDone(c) ? "Dégusté" : "À recevoir") + '</span></button>').join("");
+    const days = new Set(shown.map((c) => c.rdvJour || "")); let lastDay = null, h = "";
+    shown.forEach((c) => {
+      if (days.size > 1 && (c.rdvJour || "") !== lastDay) { lastDay = c.rdvJour || ""; h += '<div class="dayh">' + esc(dayLabel(lastDay)) + '</div>'; }
+      h += '<button type="button" class="crow' + (c.id === currentId ? " sel" : "") + '" data-id="' + esc(c.id) + '">' +
+        '<span class="t' + (c.rdv ? "" : " none") + '">' + (c.rdv ? esc(c.rdv.replace(":", "h")) : "—") + '</span>' +
+        '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
+        '<span class="rside"><span class="chip' + (isDone(c) ? " done" : "") + '">' + (isDone(c) ? "Dégusté" : "À recevoir") + '</span>' +
+        ((c.recu || c.interet) ? '<span class="tags">' + (c.interet ? '<i class="int ' + esc(c.interet) + '" title="' + esc((INTERETS.find((x) => x[0] === c.interet) || [, ""])[1]) + '"></i>' : "") + (c.recu ? '<span class="ini" title="Reçus par ' + esc(c.recu) + '">' + esc(c.recu[0]) + '</span>' : "") + '</span>' : "") + '</span></button>';
+    });
+    L.innerHTML = h;
   }
 
   // ---------- fiche ----------
@@ -449,7 +526,15 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   }
   const splitRef = (w) => { const m = META.get(w); if (m) return [m.dom, m.cuv]; const p = w.split(" — "); return p.length > 1 ? [p[0], p.slice(1).join(" — ")] : ["", w]; };
   function bottle(w, cls) { const t = thumbOf(w); return t ? '<img class="' + cls + '" src="' + t + '" alt="">' : '<span class="' + cls + ' nob"></span>'; }
-  function ficheLink(w) { const u = ficheOf(w); return u ? '<a class="fiche" href="' + esc(u) + '" target="_blank" rel="noopener">Fiche ↗</a>' : ""; }
+  function ficheLink(w) { const u = ficheOf(w); return u ? '<button type="button" class="fiche" data-fiche="' + esc(u) + '" data-fname="' + esc(w) + '">Fiche</button>' : ""; }
+  function openFiche(u, name) {
+    let o = $("ov");
+    if (!o) {
+      document.body.insertAdjacentHTML("beforeend", '<div class="ov" id="ov" hidden><div class="ovbar"><strong id="ovT"></strong><a id="ovA" target="_blank" rel="noopener">Ouvrir à part ↗</a><button type="button" id="ovX">Fermer ✕</button></div><iframe id="ovF" title="Fiche du vin"></iframe></div>');
+      o = $("ov"); $("ovX").addEventListener("click", () => { o.hidden = true; $("ovF").src = "about:blank"; document.body.classList.remove("ovopen"); });
+    }
+    $("ovT").textContent = name; $("ovA").href = u; $("ovF").src = u; o.hidden = false; document.body.classList.add("ovopen");
+  }
   function catPills(counter) {
     return CATS.map((cat) => { const n = counter(cat); return '<button type="button" class="pill' + (catFilter === cat ? " on" : "") + '" data-catf="' + esc(cat) + '" style="' + ccVars(cat) + '"><span class="sw"></span>' + esc(cat) + (n ? ' <span class="n">' + n + '</span>' : "") + '</button>'; }).join("");
   }
@@ -494,6 +579,30 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
     return h;
   }
   function regions(cat, regs) { const r = regionFilter[cat]; return regs.includes(r) ? r : ""; }
+  // Ratios Pépites de vin (règles mails) : 6 verres par bouteille, arrondi au carton de 6.
+  const RATIOS = { cocktail: { Bulles: 2.5, "Rosé": 1.5, Rouge: "forfait" }, diner: { Blanc: 1.5, Rouge: 1.5 }, dessert: { Bulles: 1 } };
+  const ECOL = ["Bulles", "Rosé", "Blanc", "Rouge"];
+  function estimHtml(c) {
+    const mo = c.moments || {}, rows = [], tot = { Bulles: 0, "Rosé": 0, Blanc: 0, Rouge: 0 }, notes = [];
+    MOMENTS.forEach((m) => {
+      const v = mo[m[0]] || {}, n = parseInt(v.inv || c.invites, 10);
+      if (!v.s || v.s === "Non") return;
+      const r = RATIOS[m[0]];
+      if (!r) { notes.push(m[1] + (m[0] === "brunch" ? " : sur les restes, plus 6 bouteilles par couleur si besoin" : " : pas de ratio de référence, à estimer avec le couple")); return; }
+      if (!(n > 0)) { notes.push(m[1] + " : nombre de personnes à renseigner"); return; }
+      const cells = ECOL.map((k) => { const x = r[k]; if (!x) return ""; const b = x === "forfait" ? 6 : Math.ceil(n * x / 6); tot[k] += b; return b; });
+      rows.push('<tr><th>' + esc(m[1]) + '<small>' + n + ' pers.</small></th>' + cells.map((b) => '<td>' + (b === "" ? "" : b) + '</td>').join("") + '</tr>');
+    });
+    const sp = c.spirit && c.spirit !== "Non" ? Math.ceil((parseInt(c.invites, 10) || 0) / 6) : 0;
+    if (!rows.length && !notes.length) return "";
+    const r6 = (x) => Math.ceil(x / 6) * 6;
+    return '<section class="blk"><h3>Estimation des quantités <small>indicative</small></h3>' +
+      (rows.length ? '<div class="estw"><table class="est"><thead><tr><th></th>' + ECOL.map((k) => '<th style="' + ccVars(k === "Bulles" ? "Champagne" : k) + '"><span class="sw"></span>' + esc(k) + '</th>').join("") + '</tr></thead><tbody>' + rows.join("") + '</tbody>' +
+        '<tfoot><tr><th>Total <small>cartons de 6</small></th>' + ECOL.map((k) => '<td>' + (tot[k] ? r6(tot[k]) : "") + '</td>').join("") + '</tr></tfoot></table></div>' : "") +
+      (sp ? '<p class="hint" style="font-size:14px">Spiritueux : environ <strong>' + sp + ' bouteille' + (sp > 1 ? "s" : "") + '</strong> au global (1 pour 6 personnes).</p>' : "") +
+      (notes.length ? '<ul class="estn">' + notes.map((x) => '<li>' + esc(x) + '</li>').join("") + '</ul>' : "") +
+      '<p class="hint">Ratios Pépites de vin pour des buveurs normaux : cocktail 2,5 verres de bulles, 1,5 de rosé et 6 bouteilles de rouge ; dîner 1,5 de blanc et 1,5 de rouge ; dessert 1 verre de bulles. 6 verres par bouteille.</p></section>';
+  }
   function tasteList(c) {
     const out = [], seen = new Set();
     const add = (ref, cat) => { if (!seen.has(ref)) { seen.add(ref); out.push({ ref, cat }); } };
@@ -526,7 +635,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
     }).join("");
     return h;
   }
-  const TABS = [["mariage", "Mariage"], ["choix", "Vins à goûter"], ["degustation", "Dégustation"], ["notes", "Notes"]];
+  const TABS = [["mariage", "Mariage"], ["choix", "Vins à goûter"], ["degustation", "Dégustation"], ["notes", "Suivi"]];
   let activeTab = "mariage", editIdentity = false;
   const tabLabel = (t) => t[0] === "choix" ? '<span class="lg">Vins à goûter</span><span class="sm">À goûter</span>' : esc(t[1]);
   function tabBadge(k, c) {
@@ -534,7 +643,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
     if (k === "degustation") { const tot = tasteList(c).length, n = c.tasting.filter((t) => t.avis).length; return tot ? n + "/" + tot : ""; }
     if (k === "mariage") { const n = MOMENTS.filter((m) => ((c.moments || {})[m[0]] || {}).s === "Oui").length; return n ? String(n) : ""; }
     if (k === "budget") { const b = c.budget || {}; return (b.total || b.fourchette) ? "€" : ""; }
-    if (k === "notes") return c.notes ? "•" : "";
+    if (k === "notes") return c.interet ? (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1] : (c.notes ? "•" : "");
     return "";
   }
   function renderFiche() {
@@ -550,7 +659,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
       '<div class="fhead"><div style="min-width:0"><button type="button" class="ghost small back" id="back">← Couples</button>' +
       '<h2 id="fName">' + esc(coupleName(c)) + '</h2><div class="fmeta" id="fMeta">' + metaHtml(c) + '</div>' +
       (editIdentity ? "" : '<button type="button" class="linkbtn" id="identEdit" style="margin-top:8px">✎ Modifier le rendez-vous</button>') + '</div>' +
-      '<div class="fside"><span class="saved" id="saved">À jour</span>' +
+      '<div class="fside"><button type="button" class="cbtn" id="coupleBtn">' + (document.body.classList.contains("couple") ? "Quitter le mode couple" : "Face au couple") + '</button><span class="saved" id="saved">À jour</span>' +
       '<label class="donet"><input type="checkbox" data-k="done"' + (isDone(c) ? " checked" : "") + '> Dégustation faite</label></div></div>' +
 
       (editIdentity ? '<section class="blk ident"><h3>Rendez-vous <small>modifiable à tout moment</small></h3><div class="cols">' +
@@ -561,6 +670,12 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
           '<input data-k="lieu" data-ident id="lieuAutre" value="' + esc(LIEUX.includes(c.lieu) ? "" : c.lieu) + '" placeholder="Nom du lieu" autocapitalize="words"' + (c.lieu && !LIEUX.includes(c.lieu) ? "" : " hidden") + '></label>' +
         '<label class="f">Date du mariage<input type="date" data-k="date" data-ident value="' + esc(c.date) + '"></label>' +
         '<label class="f">Heure du RDV<input type="time" data-k="rdv" data-ident value="' + esc(c.rdv || "") + '"></label></div>' +
+        '<div class="cols"><label class="f">Jour du RDV<input type="date" data-k="rdvJour" data-ident value="' + esc(c.rdvJour || "") + '"></label>' +
+        '<label class="f">Reçus par<select data-k="recu" data-ident class="' + (c.recu ? "set" : "") + '">' + opts(EQUIPE, c.recu || "", "—") + '</select></label>' +
+        '<label class="f">E-mail<input type="email" inputmode="email" autocapitalize="off" data-k="email" data-ident value="' + esc(c.email || "") + '"></label>' +
+        '<label class="f">Téléphone<input type="tel" inputmode="tel" data-k="tel" data-ident value="' + esc(c.tel || "") + '"></label></div>' +
+        '<div class="cols"><label class="f">Wedding planner<input data-k="planner" data-ident value="' + esc(c.planner || "") + '" autocapitalize="words"></label>' +
+        '<label class="f">Traiteur<input data-k="traiteur" data-ident value="' + esc(c.traiteur || "") + '" autocapitalize="words"></label></div>' +
         '<div class="tools"><button type="button" class="primary small" id="identDone">Terminé</button><button type="button" class="danger small" id="delCouple">Supprimer ce couple</button></div></section>' : "") +
       '<div class="tabs" role="tablist">' + TABS.map((t) => { const n = tabBadge(t[0], c); return '<button type="button" role="tab" class="tab' + (activeTab === t[0] ? " on" : "") + '" aria-selected="' + (activeTab === t[0]) + '" data-tab="' + t[0] + '">' + tabLabel(t) + (n ? ' <span class="badge">' + esc(n) + '</span>' : "") + '</button>'; }).join("") + '</div>' +
 
@@ -576,6 +691,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
       }).join("") + '</div>' +
       (MOMENTS.some((m) => mom(m[0]).s === "Non") ? '<div class="mchips" style="margin-top:8px"><span class="hint">Remettre un moment retiré par erreur :</span>' + MOMENTS.filter((m) => mom(m[0]).s === "Non").map((m) => '<button type="button" class="mchip" data-mrestore="' + m[0] + '">+ ' + esc(m[1]) + '</button>').join("") + '</div>' : "") +
       '</section>' +
+      '<div id="estim">' + estimHtml(c) + '</div>' +
 
       '<section class="blk"><h3>Spiritueux</h3><div class="cols">' +
       '<label class="f">Besoin en spiritueux<select data-k="spirit" class="' + (c.spirit ? "set" : "") + '">' + opts(MSTAT, c.spirit || "", "—") + '</select></label>' +
@@ -602,10 +718,32 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
       // ----- Budget
 
       // ----- Notes
-      '<div class="tabpanel"' + show("notes") + '><section class="blk"><h3>Notes</h3><textarea data-k="notes" placeholder="Traiteur, wedding planner, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
+      '<div class="tabpanel"' + show("notes") + '><section class="blk"><h3>Suivi commercial <small>interne, masqué en mode couple</small></h3>' +
+        '<div class="mchips"><span class="hint">Intérêt du couple</span>' + INTERETS.map((x) => '<button type="button" class="mchip intp ' + x[0] + (c.interet === x[0] ? " on" : "") + '" data-int="' + x[0] + '">' + x[1] + '</button>').join("") + '</div>' +
+        '<div class="cols"><label class="f">Prochaine action<select data-k="action" class="' + (c.action ? "set" : "") + '">' + opts(ACTIONS, c.action || "", "—") + '</select></label></div></section>' +
+        '<section class="blk"><h3>Notes</h3><textarea data-k="notes" placeholder="Menu, goûts, contraintes, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
       '</div>';
   }
 
+  function renderBilan() {
+    flush(); currentId = null; current = null; document.body.classList.add("open"); renderList();
+    const M = $("main"), n = couples.length, done = couples.filter(isDone).length;
+    const cnt = {}, love = {};
+    couples.forEach((c) => (c.tasting || []).forEach((t) => { cnt[t.ref] = (cnt[t.ref] || 0) + 1; if (t.avis === "coeur" || t.avis === "aime") love[t.ref] = (love[t.ref] || 0) + (t.avis === "coeur" ? 2 : 1); }));
+    const top = Object.keys(love).sort((a, b) => love[b] - love[a] || (cnt[b] || 0) - (cnt[a] || 0)).slice(0, 10);
+    const coeurs = (ref) => couples.filter((c) => (c.tasting || []).some((t) => t.ref === ref && t.avis === "coeur")).length;
+    const bud = couples.map((c) => parseFloat(String((c.budget || {}).total || "").replace(/\s/g, "").replace(",", "."))).filter((x) => x > 0);
+    const byInt = (k) => couples.filter((c) => c.interet === k).length;
+    const link = (c) => '<button type="button" class="blink" data-open="' + esc(c.id) + '">' + esc(coupleName(c)) + '</button>';
+    const acts = ACTIONS.filter(Boolean).map((a) => [a, couples.filter((c) => c.action === a)]).filter((x) => x[1].length);
+    M.innerHTML = '<div class="fhead"><div><button type="button" class="ghost small back" id="back">← Couples</button><h2>Bilan du salon</h2><div class="fmeta"><span>Wedding Shop Days · mis à jour en direct</span></div></div></div>' +
+      '<div class="kpis"><div><b>' + n + '</b><span>rendez-vous</span></div><div><b>' + done + '</b><span>dégustés</span></div><div><b>' + byInt("chaud") + '</b><span>chauds</span></div><div><b>' + byInt("tiede") + '</b><span>tièdes</span></div><div><b>' + byInt("froid") + '</b><span>froids</span></div>' +
+        '<div><b>' + (bud.length ? Math.round(bud.reduce((a, b) => a + b, 0) / bud.length).toLocaleString("fr-FR") + " €" : "—") + '</b><span>budget moyen annoncé' + (bud.length ? " (" + bud.length + ")" : "") + '</span></div></div>' +
+      '<section class="blk"><h3>Vins les plus appréciés</h3>' + (top.length ? '<ol class="topw">' + top.map((r) => { const [d, cu] = splitRef(r); return '<li><span><small>' + esc(d) + '</small>' + esc(cu) + '</span><span class="sc">' + coeurs(r) + ' 😍 · ' + cnt[r] + ' dégust.</span></li>'; }).join("") + '</ol>' : '<p class="none">Aucune impression notée pour l\'instant.</p>') + '</section>' +
+      '<section class="blk"><h3>Prochaines actions</h3>' + (acts.length ? acts.map((x) => '<div class="actg"><strong>' + esc(x[0]) + ' <small>' + x[1].length + '</small></strong><div>' + x[1].map(link).join("") + '</div></div>').join("") : '<p class="none">Aucune action renseignée dans l\'onglet Suivi.</p>') + '</section>' +
+      '<section class="blk"><h3>Par lieu</h3><div class="actg">' + LIEUX.concat([""]).map((l) => { const k = couples.filter((c) => (l ? c.lieu === l : !LIEUX.includes(c.lieu))); return k.length ? '<div class="lrow"><span>' + esc(l || "Autre / non précisé") + '</span><b>' + k.length + ' RDV · ' + k.filter(isDone).length + ' dégustés</b></div>' : ""; }).join("") + '</div></section>';
+    if (window.matchMedia("(max-width: 919px)").matches) window.scrollTo(0, 0);
+  }
   function openCouple(id) {
     flush();
     const c = couples.find((x) => x.id === id); if (!c) return;
@@ -670,7 +808,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
       el.classList.toggle("set", !!el.value); $("fMeta").innerHTML = metaHtml(current); markDirty(true); return;
     }
     if (el.dataset.k === "done") { current.done = el.checked; markDirty(true); return; }
-    if (el.dataset.k && el.tagName === "SELECT") { current[el.dataset.k] = el.value; el.classList.toggle("set", !!el.value); markDirty(true); return; }
+    if (el.dataset.k && el.tagName === "SELECT") { current[el.dataset.k] = el.value; el.classList.toggle("set", !!el.value); if ("ident" in el.dataset) $("fMeta").innerHTML = metaHtml(current); markDirty(true); return; }
     if (el.dataset.k && el.type === "date") { current[el.dataset.k] = el.value; markDirty(true); return; }
     if (el.dataset.m && el.tagName === "SELECT") { current.moments = current.moments || {}; const m = current.moments[el.dataset.m] = Object.assign({}, current.moments[el.dataset.m]); m.s = el.value; el.classList.toggle("set", !!el.value);
       if (m.s === "Non") { m.inv = ""; m.auto = true; }
@@ -701,7 +839,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   });
   M.addEventListener("focusout", (e) => {
     const el = e.target; if (!current || !("ident" in el.dataset)) return;
-    const k = el.dataset.k; if (k === "date" || k === "rdv") return; const v = k === "n1" || k === "n2" ? el.value.trim().replace(/\s+/g, " ").toUpperCase() : k === "lieu" ? el.value.trim().replace(/\s+/g, " ") : cap(el.value);
+    const k = el.dataset.k; if (["date", "rdv", "rdvJour", "email", "tel"].includes(k)) return; const v = k === "n1" || k === "n2" ? el.value.trim().replace(/\s+/g, " ").toUpperCase() : k === "lieu" ? el.value.trim().replace(/\s+/g, " ") : cap(el.value);
     if (v !== current[k]) { current[k] = v; el.value = v; markDirty(true); $("fName").textContent = coupleName(current); }
   });
   M.addEventListener("keydown", (e) => {
@@ -712,6 +850,15 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   M.addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b || !current) return;
     if (b.id === "identEdit") { editIdentity = true; renderFiche(); const el = M.querySelector('[data-k="p1"]'); if (el) el.focus(); return; }
+    if (b.id === "coupleBtn") {
+      const on = !document.body.classList.contains("couple");
+      document.body.classList.toggle("couple", on);
+      if (on && activeTab === "notes") activeTab = "mariage";
+      if (on) editIdentity = false;
+      renderFiche(); window.scrollTo(0, 0); return;
+    }
+    if (b.dataset.fiche) { openFiche(b.dataset.fiche, b.dataset.fname); return; }
+    if (b.dataset.int) { current.interet = current.interet === b.dataset.int ? "" : b.dataset.int; markDirty(true); refreshItems(); updateBadges(); return; }
     if (b.id === "identDone") { editIdentity = false; flush(); renderFiche(); return; }
     if (b.dataset.tab) { activeTab = b.dataset.tab; const y = window.scrollY; renderFiche(); window.scrollTo(0, Math.min(y, M.offsetTop)); return; }
     if (b.id === "back") { flush(); document.body.classList.remove("open"); currentId = null; current = null; renderList(); renderFiche(); window.scrollTo(0, 0); return; }
@@ -868,15 +1015,37 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   $("importCancel").addEventListener("click", () => { $("importZone").hidden = true; });
   $("importGo").addEventListener("click", async () => {
     const lines = $("importText").value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    const rows = lines.map((l) => l.split(/\t|;/).map((x) => x.trim()))
-      .filter((r, i) => !(i === 0 && /pr[ée]nom|nom|lieu/i.test(r.join(" ")) && !/\d/.test(r.join(""))));
+    let rows = lines.map((l) => l.split(/\t|;/).map((x) => x.trim()));
+    const FIELDS = ["p1", "n1", "p2", "n2", "lieu", "date", "rdv", "rdvJour", "email", "tel", "planner", "recu"];
+    let order = FIELDS;
+    if (rows.length && /pr[ée]nom|nom|lieu|mail|t[ée]l/i.test(rows[0].join(" ")) && !/@|\d{3}/.test(rows[0].join(" "))) {
+      const seen = { p: 0, n: 0 };
+      order = rows[0].map((h) => {
+        const t = simple(h);
+        if (/prenom/.test(t)) return ++seen.p === 1 ? "p1" : "p2";
+        if (/^nom|\bnom\b/.test(t)) return ++seen.n === 1 ? "n1" : "n2";
+        if (/lieu|domaine|reception/.test(t)) return "lieu";
+        if (/heure|horaire/.test(t)) return "rdv";
+        if (/jour|date.*(rdv|rendez)/.test(t)) return "rdvJour";
+        if (/date|mariage/.test(t)) return "date";
+        if (/mail/.test(t)) return "email";
+        if (/tel|phone|portable/.test(t)) return "tel";
+        if (/planner|wp|organisat/.test(t)) return "planner";
+        if (/traiteur/.test(t)) return "traiteur";
+        if (/recu|qui|vendeur|equipe/.test(t)) return "recu";
+        return "";
+      });
+      rows = rows.slice(1);
+    }
     if (!rows.length) { toast("Rien à importer"); return; }
     const existing = new Set(couples.map((c) => coupleName(c).toLowerCase()));
     const list = [];
     rows.forEach((r) => {
       let d;
-      if (r.length >= 5) d = { p1: cap(r[0]), n1: (r[1] || "").toUpperCase(), p2: cap(r[2]), n2: (r[3] || "").toUpperCase(), lieu: normLieu(r[4]), date: normDate(r[5]), rdv: normTime(r[6]) };
-      else d = { p1: r[0] || "", lieu: normLieu(r[1]), date: normDate(r[2]), rdv: normTime(r[3]) };
+      const v = {}; order.forEach((k, i) => { if (k && r[i] && !v[k]) v[k] = r[i]; });
+      if (order === FIELDS && r.length < 5) { v.p1 = r[0]; v.lieu = r[1]; v.date = r[2]; v.rdv = r[3]; v.n1 = v.p2 = v.n2 = ""; }
+      const who = simple(v.recu || ""); const recu = EQUIPE.find((e) => simple(e) === who || simple(e)[0] === who[0] && who.length <= 2) || "";
+      d = { p1: cap(v.p1 || ""), n1: (v.n1 || "").toUpperCase(), p2: cap(v.p2 || ""), n2: (v.n2 || "").toUpperCase(), lieu: normLieu(v.lieu), date: normDate(v.date), rdv: normTime(v.rdv), rdvJour: normDate(v.rdvJour), email: (v.email || "").toLowerCase(), tel: v.tel || "", planner: v.planner || "", traiteur: v.traiteur || "", recu };
       if (!existing.has(coupleName(d).toLowerCase())) { list.push(d); existing.add(coupleName(d).toLowerCase()); }
     });
     const before = couples.length;
@@ -895,10 +1064,10 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   // ---------- export ----------
   const AV = (a) => (a && FACE[a] ? FACE[a][2] : "");
   function table() {
-    const head = ["Heure RDV", "Prénom 1", "Nom 1", "Prénom 2", "Nom 2", "Lieu de réception", "Date", "Invités"].concat(MOMENTS.map((m) => m[1])).concat(["Besoin spiritueux", "Types de spiritueux", "Spiritueux (précisions)"]).concat(["Budget (enveloppe)", "Budget (montant €)"]).concat(BCATS.map((k) => "Prix visé " + k)).concat(["Remarques budget"]).concat(["Dégustation faite", "Vins prévus", "Coups de cœur", "Vins goûtés (impression · commentaire · moment)", "Sélection envisagée", "Notes"]);
+    const head = ["Jour RDV", "Heure RDV", "Reçus par", "Prénom 1", "Nom 1", "Prénom 2", "Nom 2", "E-mail", "Téléphone", "Lieu de réception", "Date", "Wedding planner", "Traiteur", "Intérêt", "Prochaine action", "Invités"].concat(MOMENTS.map((m) => m[1])).concat(["Besoin spiritueux", "Types de spiritueux", "Spiritueux (précisions)"]).concat(["Budget (enveloppe)", "Budget (montant €)"]).concat(BCATS.map((k) => "Prix visé " + k)).concat(["Remarques budget"]).concat(["Dégustation faite", "Vins prévus", "Coups de cœur", "Vins goûtés (impression · commentaire · moment)", "Sélection envisagée", "Notes"]);
     const rows = couples.slice().sort((a, b) => ((a.rdv || "99:99") + simple(a.n1)).localeCompare((b.rdv || "99:99") + simple(b.n1), "fr")).map((c) => {
       const t = c.tasting || [], s = c.selection || [];
-      return [c.rdv || "", c.p1, c.n1, c.p2, c.n2, c.lieu, c.date, c.invites]
+      return [c.rdvJour || "", c.rdv || "", c.recu || "", c.p1, c.n1, c.p2, c.n2, c.email || "", c.tel || "", c.lieu, c.date, c.planner || "", c.traiteur || "", (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1], c.action || "", c.invites]
         .concat(MOMENTS.map((m) => { const v = (c.moments || {})[m[0]] || {}; return [v.s, v.inv ? v.inv + " pers." : ""].filter(Boolean).join(" · "); }))
         .concat([c.spirit || "", (c.spiritTypes || []).map((t) => t + ((c.spiritPrix || {})[t] ? " (" + c.spiritPrix[t] + ")" : "")).join(", "), c.spiritNote || ""])
         .concat((() => { const b = c.budget || {}, p = b.prix || {}; return [b.fourchette, b.total].concat(BCATS.map((k) => p[k] || "")).concat([b.note]); })())
@@ -934,6 +1103,15 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
   $("filter").addEventListener("change", renderList);
   $("lieuF").innerHTML = '<option value="">Tous les lieux</option>' + LIEUX.map((l) => "<option>" + esc(l) + "</option>").join("");
   $("lieuF").addEventListener("change", renderList);
+  $("bilanBtn").addEventListener("click", renderBilan);
+  M.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-open]"); if (b) { openCouple(b.dataset.open); return; }
+    if (!current && e.target.closest("#back")) { document.body.classList.remove("open"); renderList(); renderFiche(); window.scrollTo(0, 0); }
+  });
+  let estimTimer = null;
+  const reEstim = () => { clearTimeout(estimTimer); estimTimer = setTimeout(() => { const el = $("estim"); if (el && current) el.innerHTML = estimHtml(current); }, 400); };
+  M.addEventListener("input", (e) => { if (e.target.dataset.k === "invites" || e.target.dataset.m) reEstim(); });
+  M.addEventListener("change", (e) => { if (e.target.dataset.m || e.target.dataset.k === "spirit") reEstim(); });
   document.addEventListener("click", (e) => { document.querySelectorAll("details.more[open]").forEach((d) => { if (!d.contains(e.target) || e.target.closest(".menu button")) d.open = false; }); });
   document.addEventListener("visibilitychange", () => { if (document.hidden) flush(); });
 
@@ -974,7 +1152,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
       online = true;
     } catch (e) { if (e.code === "cle") askKey(true); else online = false; }
     finally { pushing = false; updateStatus(); }
-    clearTimeout(retry); if (Object.keys(pending).length) retry = setTimeout(pushPending, 5000);
+    clearTimeout(retry); if (Object.keys(pending).length) retry = setTimeout(pushPending, online ? 60 : 5000);
   }
   async function pull() {
     if (!KEY || pulling) return; pulling = true;
