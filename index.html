@@ -260,6 +260,10 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
 
 .kpis b, .est, .stat b, .crow .t { font-variant-numeric: lining-nums tabular-nums; }
 .chip.vis { color: var(--line-2); border-style: dashed; }
+.deja { font-family: var(--body); font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--brick); border: 1px solid var(--brick); border-radius: 99px; padding: 2px 6px 0; vertical-align: 2px; white-space: nowrap; }
+body.couple .deja { display: none; }
+.hist { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; }
+.histx { white-space: pre-wrap; font-size: 14.5px; line-height: 1.5; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
 .dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
@@ -462,6 +466,7 @@ body.ovopen { overflow: hidden; }
     return (c.lieu ? '<span class="venue">' + esc(c.lieu) + '</span>' : "") + (c.date ? '<span>Mariage le ' + esc(fmtShortDate(c.date)) + '</span>' : "") +
       ((c.rdv || jour) ? '<span class="rdv">RDV ' + esc([jour, c.rdv ? c.rdv.replace(":", "h") : ""].filter(Boolean).join(" à ")) + '</span>' : "") +
       (c.recu ? '<span class="who">Reçus par ' + esc(c.recu) + '</span>' : "") +
+      (c.historique ? '<span class="who">Déjà en contact avec nous</span>' : "") +
       ((c.cherche || []).includes("Boissons") ? '<span class="who">Cherchent un prestataire boissons</span>' : "") +
       (c.planner ? '<span>Planner : ' + esc(c.planner) + '</span>' : "") + (c.traiteur ? '<span>Traiteur : ' + esc(c.traiteur) + '</span>' : "");
   }
@@ -503,7 +508,8 @@ body.ovopen { overflow: hidden; }
       if (days.size > 1 && (c.rdvJour || "") !== lastDay) { lastDay = c.rdvJour || ""; h += '<div class="dayh">' + esc(dayLabel(lastDay)) + '</div>'; }
       h += '<button type="button" class="crow' + (c.id === currentId ? " sel" : "") + '" data-id="' + esc(c.id) + '">' +
         '<span class="t' + (c.rdv ? "" : " none") + '">' + (c.rdv ? esc(c.rdv.replace(":", "h")) : "—") + '</span>' +
-        '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
+        '' +
+        '<span style="min-width:0"><div class="n">' + esc(coupleName(c)) + (c.historique ? ' <span class="deja">déjà en contact</span>' : "") + '</div>' + ((c.lieu || c.date) ? '<div class="l">' + esc([c.lieu, c.date ? new Date(c.date + "T12:00").toLocaleDateString("fr-FR") : ""].filter(Boolean).join(" · ")) + '</div>' : "") + catDots(c) + '</span>' +
         '<span class="rside"><span class="chip' + (isDone(c) ? " done" : isVisiteur(c) ? " vis" : "") + '">' + (isDone(c) ? "Dégusté" : isVisiteur(c) ? "Sans RDV" : "À recevoir") + '</span>' +
         ((c.recu || c.interet) ? '<span class="tags">' + (c.interet ? '<i class="int ' + esc(c.interet) + '" title="' + esc((INTERETS.find((x) => x[0] === c.interet) || [, ""])[1]) + '"></i>' : "") + (c.recu ? '<span class="ini" title="Reçus par ' + esc(c.recu) + '">' + esc(c.recu[0]) + '</span>' : "") + '</span>' : "") + '</span></button>';
     });
@@ -645,6 +651,7 @@ body.ovopen { overflow: hidden; }
     if (k === "degustation") { const tot = tasteList(c).length, n = c.tasting.filter((t) => t.avis).length; return tot ? n + "/" + tot : ""; }
     if (k === "mariage") { const n = MOMENTS.filter((m) => ((c.moments || {})[m[0]] || {}).s === "Oui").length; return n ? String(n) : ""; }
     if (k === "budget") { const b = c.budget || {}; return (b.total || b.fourchette) ? "€" : ""; }
+    if (k === "notes" && c.historique && !c.interet) return "Historique";
     if (k === "notes") return c.interet ? (INTERETS.find((x) => x[0] === c.interet) || [, ""])[1] : (c.notes ? "•" : "");
     return "";
   }
@@ -720,7 +727,9 @@ body.ovopen { overflow: hidden; }
       // ----- Budget
 
       // ----- Notes
-      '<div class="tabpanel"' + show("notes") + '><section class="blk"><h3>Suivi commercial <small>interne, masqué en mode couple</small></h3>' +
+      '<div class="tabpanel"' + show("notes") + '>' +
+        (c.historique ? '<section class="blk hist"><h3>Historique avec nous <small>Sellsy et mails</small></h3><div class="histx">' + esc(c.historique) + '</div></section>' : "") +
+        '<section class="blk"><h3>Suivi commercial <small>interne, masqué en mode couple</small></h3>' +
         '<div class="mchips"><span class="hint">Intérêt du couple</span>' + INTERETS.map((x) => '<button type="button" class="mchip intp ' + x[0] + (c.interet === x[0] ? " on" : "") + '" data-int="' + x[0] + '">' + x[1] + '</button>').join("") + '</div>' +
         '<div class="cols"><label class="f">Prochaine action<select data-k="action" class="' + (c.action ? "set" : "") + '">' + opts(ACTIONS, c.action || "", "—") + '</select></label></div></section>' +
         '<section class="blk"><h3>Notes</h3><textarea data-k="notes" placeholder="Menu, goûts, contraintes, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
