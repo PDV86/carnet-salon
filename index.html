@@ -261,7 +261,7 @@ section.blk > h3 small { font-family: var(--body); color: var(--muted); font-wei
 .kpis b, .est, .stat b, .crow .t { font-variant-numeric: lining-nums tabular-nums; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
-.dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); text-transform: capitalize; border-top: 1px solid var(--line); background: var(--sunk); }
+.dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
 .dayh:first-child { border-top: 0; }
 .rside { display: grid; justify-items: end; gap: 5px; }
 .tags { display: flex; gap: 5px; align-items: center; }
@@ -344,6 +344,7 @@ body.ovopen { overflow: hidden; }
         <button type="button" class="primary" id="addBtn">+ Nouveau couple</button>
         <button type="button" id="importBtn">Importer</button>
         <button type="button" id="bilanBtn">Bilan</button>
+        <button type="button" id="wsdBtn" title="Récupérer les rendez-vous de l'appli Wedding Shop Days">↻ RDV WSD</button>
         <details class="more"><summary class="btnlike">Exporter ▾</summary><div class="menu">
           <button type="button" id="exportBtn">Fichier CSV (Excel)</button>
           <button type="button" id="copyBtn">Copier pour Google Sheets</button>
@@ -482,7 +483,7 @@ body.ovopen { overflow: hidden; }
     return cats.length ? '<div class="dots">' + cats.map((cat) => '<span class="cdot" title="' + esc(cat) + '" style="' + ccVars(cat) + '"></span>').join("") + '</div>' : "";
   }
   // ---------- liste ----------
-  const dayLabel = (d) => d ? new Date(d + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "Jour non précisé";
+  const dayLabel = (d) => { const t = d ? new Date(d + "T12:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "Sans rendez-vous fixé"; return t.charAt(0).toUpperCase() + t.slice(1); };
   function renderList() {
     const q = simple($("search").value.trim()), f = $("filter").value, lf = $("lieuF").value;
     $("sAll").textContent = couples.length;
@@ -1193,11 +1194,26 @@ body.ovopen { overflow: hidden; }
     const go = () => { const v = $("keyIn").value.trim().toLowerCase(); if (!v) return; KEY = v; lsw(K_KEY, v); since = { couples: 0, refs: 0 }; b.hidden = true; b.textContent = ""; online = null; updateStatus(); pull(); pushPending(); };
     $("keyGo").addEventListener("click", go); $("keyIn").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
   }
+  let wsdBusy = false;
+  async function wsdSync(force) {
+    if (!KEY || wsdBusy) return; wsdBusy = true;
+    const b = $("wsdBtn"); if (force && b) b.disabled = true;
+    try {
+      const r = await fetch(API + KEY + "/wsd-sync" + (force ? "?force" : ""), { cache: "no-store" }).then((x) => x.json());
+      if (!r.ok) { if (force) toast("Appli WSD indisponible : " + (r.erreur || "erreur")); return; }
+      const n = (r.crees || []).length, m = (r.maj || []).length;
+      if (n || m) { toast((n ? n + " nouveau" + (n > 1 ? "x" : "") + " RDV" : "") + (n && m ? " · " : "") + (m ? m + " RDV mis à jour" : "")); await pull(); }
+      else if (force) toast("Planning WSD à jour · " + r.rdv + " RDV");
+    } catch (e) { if (force) toast("Appli WSD injoignable"); }
+    finally { wsdBusy = false; if (b) b.disabled = false; }
+  }
+  $("wsdBtn").addEventListener("click", () => wsdSync(true));
+  setInterval(() => { if (!document.hidden) wsdSync(false); }, 10 * 60 * 1000);
   (function boot() {
     const c = lsr(K_CACHE); if (c) { couples = c.couples || []; customRefs = c.refs || []; since = c.since || since; }
     renderList(); updateStatus();
     if (!KEY) { askKey(false); return; }
-    pull(); pushPending();
+    pull(); pushPending(); setTimeout(() => wsdSync(false), 1500);
   })();
   setInterval(() => { if (!document.hidden) pull(); }, 5000);
   window.addEventListener("online", () => { pushPending(); pull(); });
