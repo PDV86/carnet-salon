@@ -304,7 +304,11 @@ body.couple .deja { display: none; }
 }
 .madd { display: flex; gap: 8px; margin-top: 10px; }
 .madd input { flex: 1 1 auto; min-width: 0; }
+.madd button { white-space: nowrap; flex: none; }
 .stotal input::placeholder { color: var(--brand-fg); opacity: .6; }
+.fmeta .nomail { color: var(--brick); font-style: italic; }
+.mrow.mrow3 { grid-template-columns: minmax(0, 1fr) 96px 40px; }
+@media (max-width: 480px) { .mrow.mrow3 { grid-template-columns: minmax(0, 1fr) 76px 36px; padding-left: 10px; } }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
 .dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
@@ -509,6 +513,7 @@ body.ovopen { overflow: hidden; }
       ((c.rdv || jour) ? '<span class="rdv">RDV ' + esc([jour, c.rdv ? c.rdv.replace(":", "h") : ""].filter(Boolean).join(" à ")) + '</span>' : "") +
       (c.recu ? '<span class="who">Reçus par ' + esc(c.recu) + '</span>' : "") +
       (c.historique ? '<span class="who">Déjà en contact avec nous</span>' : "") +
+      (!c.email ? '<span class="who nomail">E-mail à demander</span>' : "") +
       (c.devis || []).map((d) => '<a class="who devl" href="' + esc(d.url) + '" target="_blank" rel="noopener">Devis ' + esc(d.num) + ' ↗</a>').join("") +
       ((c.cherche || []).includes("Boissons") ? '<span class="who">Cherchent un prestataire boissons</span>' : "") +
       (c.planner ? '<span>Planner : ' + esc(c.planner) + '</span>' : "") + (c.traiteur ? '<span>Traiteur : ' + esc(c.traiteur) + '</span>' : "");
@@ -681,7 +686,7 @@ body.ovopen { overflow: hidden; }
     const rows = [], per = new Map(list.map((w) => [w.ref, 0])), missing = [];
     MOM(c).forEach((m) => {
       const st = ((c.moments || {})[m[0]] || {});
-      if (!st.s || st.s === "Non") return;
+      if (st.s === "Non") return;
       const n = parseInt(st.inv || c.invites, 10) || 0;
       SCOLS.forEach(([ck, cl]) => {
         const ws = list.filter((w) => w.col === ck && w.mos.includes(m[1]));
@@ -713,7 +718,7 @@ body.ovopen { overflow: hidden; }
   function simuPanel(c) {
     const r = simuCalc(c), S = c.simu || {};
     if (!r.list.length) return '<div class="none" style="display:grid;gap:12px;justify-items:start">Aucun vin retenu pour l\'instant. Dans l\'onglet Dégustation, touchez ★ sur les vins choisis (ou notez « Coup de cœur » / « Aime ») et indiquez leurs moments.<button type="button" class="primary" data-gotab="degustation">Aller à la dégustation</button></div>';
-    const actives = MOM(c).filter((m) => { const st = (c.moments || {})[m[0]] || {}; return st.s && st.s !== "Non"; });
+    const actives = MOM(c).filter((m) => (((c.moments || {})[m[0]] || {}).s !== "Non"));
     let h = '<p class="hint" style="margin:2px 0 12px">' + (r.from === "sel" ? "Vins retenus ★" : "Aucun vin retenu ★ : simulation sur les vins notés « Coup de cœur » et « Aime »") + ' · ' + r.inv + ' invités' + (actives.length ? "" : ' · <b>aucun moment renseigné dans l\'onglet Mariage</b>') + '</p>';
     if (r.missing.length) h += '<p class="warnl">Moment à préciser dans Dégustation pour : ' + r.missing.map((x) => esc(splitRef(x)[1])).join(", ") + '</p>';
     // Ratios par moment
@@ -795,7 +800,7 @@ body.ovopen { overflow: hidden; }
   function tabBadge(k, c) {
     if (k === "choix") return (c.planned || []).length ? String(c.planned.length) : "";
     if (k === "degustation") { const tot = tasteList(c).length, n = c.tasting.filter((t) => t.avis).length; return tot ? n + "/" + tot : ""; }
-    if (k === "mariage") { const n = MOM(c).filter((m) => ((c.moments || {})[m[0]] || {}).s === "Oui").length; return n ? String(n) : ""; }
+    if (k === "mariage") { const n = MOM(c).filter((m) => ((c.moments || {})[m[0]] || {}).s !== "Non").length; return n ? String(n) : ""; }
     if (k === "budget") { const b = c.budget || {}; return (b.total || b.fourchette) ? "€" : ""; }
     if (k === "simu") { const r = simuCalc(c); return r.total ? Math.round(r.total).toLocaleString("fr-FR") + " €" : ""; }
     if (k === "notes" && c.historique && !c.interet) return "Historique";
@@ -838,11 +843,12 @@ body.ovopen { overflow: hidden; }
       // ----- Mariage
       '<div class="tabpanel"' + show("mariage") + '><section class="blk"><h3>Le mariage</h3><div class="cols">' +
       '<label class="f">Invités<input inputmode="numeric" data-k="invites" value="' + esc(c.invites) + '" placeholder="ex. 120"></label>' +
+      '<label class="f">E-mail des mariés<input type="email" inputmode="email" autocapitalize="off" autocomplete="off" spellcheck="false" data-k="email" value="' + esc(c.email || "") + '" placeholder="pour leur envoyer le récap"></label>' +
+      '<label class="f">Téléphone<input type="tel" inputmode="tel" autocomplete="off" data-k="tel" value="' + esc(c.tel || "") + '" placeholder="06…"></label>' +
       '</div>' +
       '<div class="moments">' + MOM(c).filter((m) => mom(m[0]).s !== "Non").map((m) => {
         const v = mom(m[0]);
-        return '<div class="mrow mrow4"><div class="mn">' + esc(m[1]) + (m[2] ? "<small>" + esc(m[2]) + "</small>" : "") + '</div>' +
-          '<select data-m="' + m[0] + '" data-mf="s" aria-label="' + esc(m[1]) + '" class="' + (v.s ? "set" : "") + '">' + opts(["", "Oui", "À confirmer"], v.s || "", "—") + '</select>' +
+        return '<div class="mrow mrow3"><div class="mn">' + esc(m[1]) + (m[2] ? "<small>" + esc(m[2]) + "</small>" : "") + '</div>' +
           '<input inputmode="numeric" data-m="' + m[0] + '" data-mf="inv" class="' + (v.inv && v.auto ? "auto" : "") + '" value="' + esc(v.inv || "") + '" placeholder="' + (v.s === "Non" ? "—" : "pers.") + '" aria-label="Personnes ' + esc(m[1]) + '"><button type="button" class="mrm" data-mrm="' + m[0] + '" aria-label="Retirer ' + esc(m[1]) + '" title="Pas de ' + esc(m[1].toLowerCase()) + '"' + (m[3] ? ' data-mextra="1"' : "") + '>−</button></div>';
       }).join("") + '</div>' +
       '<div class="madd"><input id="maddL" placeholder="Ajouter un moment (ex. Déjeuner vendredi midi)" autocapitalize="sentences"><button type="button" class="ghost small" id="maddB">+ Ajouter</button></div>' +
@@ -963,6 +969,7 @@ body.ovopen { overflow: hidden; }
       current[el.dataset.k] = el.value; markDirty();
       if (el.dataset.k === "invites") syncMomentInvites();
       if ("ident" in el.dataset) { $("fName").textContent = coupleName(current); $("fMeta").innerHTML = metaHtml(current); }
+      else if (el.dataset.k === "email") $("fMeta").innerHTML = metaHtml(current);
     }
     else if (el.dataset.m && el.tagName === "INPUT") { current.moments = current.moments || {}; const m = current.moments[el.dataset.m] = Object.assign({}, current.moments[el.dataset.m]); m[el.dataset.mf] = el.value; if (el.dataset.mf === "inv") { m.auto = !el.value; el.classList.remove("auto"); } markDirty(); }
     else if ("wnote" in el.dataset) { const t = ensureTasting(el.closest(".tcard")); t.note = el.value; markDirty(); }
