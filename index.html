@@ -382,15 +382,19 @@ body.couple .cbtn { background: var(--brand); color: var(--brand-fg); }
 body.couple .fmeta .who, body.couple .side, body.couple .hstats, body.couple #identEdit, body.couple .tarifs, body.couple .tab[data-tab="notes"], body.couple .back, body.couple .donet, body.couple #saved, body.couple .rm { display: none !important; }
 body.couple .grid { grid-template-columns: 1fr !important; }
 body.couple .main { display: block !important; }
-.ov { position: fixed; inset: 0; z-index: 40; background: rgba(24, 51, 0, .55); display: grid; grid-template-rows: auto 1fr; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+.ov { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 40; background: rgba(24, 51, 0, .55); display: flex; flex-direction: column; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+.ovbox { position: relative; flex: 1 1 auto; min-height: 0; background: #fff; border-radius: 0 0 14px 14px; overflow: hidden; }
+.ovload { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; place-content: center; justify-items: center; gap: 14px; color: var(--brand); font-size: 15px; }
+.ovload a { color: var(--brick); font-weight: 700; }
 .ov[hidden] { display: none; }
 .ovbar { display: flex; align-items: center; gap: 10px; background: var(--brand); color: var(--brand-fg); padding: 10px 14px 8px; border-radius: 14px 14px 0 0; }
 .ovbar strong { flex: 1; min-width: 0; font-family: var(--display); font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ovbar a { color: var(--gold); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .ovbar button { background: var(--gold); color: #183300; border: 0; border-radius: 99px; padding: 7px 14px 5px; font-weight: 700; font-size: 13px; }
-.ov iframe { width: 100%; height: 100%; border: 0; background: #fff; border-radius: 0 0 14px 14px; }
+.ov iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; background: transparent; opacity: 0; transition: opacity .2s; }
+.ov iframe.ok { opacity: 1; background: #fff; }
 body.ovopen { overflow: hidden; }
-@media (max-width: 600px) { .ovbar a { display: none; } .est th, .est td { padding: 7px 5px 5px; } .est td { font-size: 17px; } }
+@media (max-width: 600px) { .ovbar a { font-size: 0; } .ovbar a::after { content: "↗"; font-size: 18px; } .est th, .est td { padding: 7px 5px 5px; } .est td { font-size: 17px; } }
 .tab .sm { display: none; }
 @media (max-width: 600px) { .tab .lg { display: none; } .tab .sm { display: inline; } }
 
@@ -621,10 +625,16 @@ body.ovopen { overflow: hidden; }
   function openFiche(u, name) {
     let o = $("ov");
     if (!o) {
-      document.body.insertAdjacentHTML("beforeend", '<div class="ov" id="ov" hidden><div class="ovbar"><strong id="ovT"></strong><a id="ovA" target="_blank" rel="noopener">Ouvrir à part ↗</a><button type="button" id="ovX">Fermer ✕</button></div><iframe id="ovF" title="Fiche du vin"></iframe></div>');
-      o = $("ov"); $("ovX").addEventListener("click", () => { o.hidden = true; $("ovF").src = "about:blank"; document.body.classList.remove("ovopen"); });
+      document.body.insertAdjacentHTML("beforeend", '<div class="ov" id="ov" hidden><div class="ovbar"><strong id="ovT"></strong><a id="ovA" target="_blank" rel="noopener">Ouvrir à part ↗</a><button type="button" id="ovX">Fermer ✕</button></div>' +
+        '<div class="ovbox"><div class="ovload"><span>Chargement de la fiche…</span><a id="ovA2" target="_blank" rel="noopener">Ouvrir la fiche à part ↗</a></div><iframe id="ovF" title="Fiche du vin"></iframe></div></div>');
+      o = $("ov"); $("ovX").addEventListener("click", () => { o.hidden = true; $("ovF").src = "about:blank"; $("ovF").classList.remove("ok"); document.body.classList.remove("ovopen"); });
+      $("ovF").addEventListener("load", () => {
+        const f = $("ovF"); if (!f.src || f.src === "about:blank") return;
+        try { const d = f.contentDocument; if (d && d.head && !d.getElementById("carnetHide")) d.head.insertAdjacentHTML("beforeend", '<style id="carnetHide">#prixseg,#cprixseg,#vprixseg,.prixsel{display:none!important}</style>'); } catch (e) {}
+        f.classList.add("ok");
+      });
     }
-    $("ovT").textContent = name; $("ovA").href = u; $("ovF").src = u; o.hidden = false; document.body.classList.add("ovopen");
+    $("ovT").textContent = name; $("ovA").href = u; $("ovA2").href = u; $("ovF").classList.remove("ok"); $("ovF").src = u; o.hidden = false; document.body.classList.add("ovopen");
   }
   function catPills(counter) {
     return CATS.map((cat) => { const n = counter(cat); return '<button type="button" class="pill' + (catFilter === cat ? " on" : "") + '" data-catf="' + esc(cat) + '" style="' + ccVars(cat) + '"><span class="sw"></span>' + esc(cat) + (n ? ' <span class="n">' + n + '</span>' : "") + '</button>'; }).join("");

@@ -1,5 +1,5 @@
-// Carnet du salon — cache hors ligne (version 17)
-const CACHE = "carnet-17";
+// Carnet du salon — cache hors ligne (version 18)
+const CACHE = "carnet-18";
 const SHELL = ["./", "./index.html", "./thumbs.js", "./icon.png", "./icon512.png", "./logo.png", "./manifest.webmanifest"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
