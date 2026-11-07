@@ -346,6 +346,25 @@ button.stat span { text-decoration: underline; text-decoration-color: rgba(250, 
 @media (max-width: 600px) { .rrow { grid-template-columns: 48px minmax(0, 1fr) auto; } .rrow .rm2 { display: none; } }
 .catbar .vf { margin-left: 0; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .catbar .vf button { flex: 0 0 auto; }
+.genb .gok { display: grid; gap: 6px; font-size: 15px; }
+.genb .gok a { color: var(--brand); font-weight: 600; }
+.genb .galt, .gwarn ul, .gerr ul { margin: 8px 0 0; padding-left: 18px; font-size: 13.5px; }
+.genb .galt { color: #7a4b00; }
+.genbox { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+.gpad { padding: 18px 20px 28px; max-width: 900px; margin: 0 auto; display: grid; gap: 10px; }
+.gpad h4 { margin: 14px 0 0; font-family: var(--display); font-weight: 600; font-size: 22px; color: var(--brand); }
+.gpad > p { margin: 0; }
+.gtab td:not(:first-child), .gtab th:not(:first-child) { white-space: nowrap; }
+.gerr { background: #fbe9e7; border: 1px solid #e0a39a; border-radius: 10px; padding: 10px 14px; color: #6d1b10; }
+.gwarn { background: #fff6e0; border: 1px solid #ead19a; border-radius: 10px; padding: 10px 14px; color: #6b4a00; }
+.gtab { width: 100%; border-collapse: collapse; font-size: 14px; }
+.gtab th, .gtab td { padding: 6px 8px; border-bottom: 1px solid #ece4d6; text-align: right; }
+.gtab th:first-child, .gtab td:first-child { text-align: left; }
+.gtab .gt td { text-align: left; font-weight: 700; color: var(--brand); background: #faf6ee; }
+.gtab tfoot td { font-weight: 700; border-bottom: 0; }
+.gmail { border: 1px solid #ece4d6; border-radius: 10px; padding: 12px 16px; font-size: 14.5px; line-height: 1.45; background: #fffdf9; }
+.gmail ul { padding-left: 20px; margin: 4px 0; }
+.gact { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
 .dayh { padding: 14px 14px 6px; font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--brick); border-top: 1px solid var(--line); background: var(--sunk); }
@@ -944,10 +963,162 @@ body.ovopen { overflow: hidden; }
         '<section class="blk"><h3>Suivi commercial <small>interne, masqué en mode couple</small></h3>' +
         '<div class="mchips"><span class="hint">Intérêt du couple</span>' + INTERETS.map((x) => '<button type="button" class="mchip intp ' + x[0] + (c.interet === x[0] ? " on" : "") + '" data-int="' + x[0] + '">' + x[1] + '</button>').join("") + '</div>' +
         '<div class="cols"><label class="f">Prochaine action<select data-k="action" class="' + (c.action ? "set" : "") + '">' + opts(ACTIONS, c.action || "", "—") + '</select></label></div></section>' +
+        genSection(c) +
         (["noteMariage", "noteGouts", "noteDegust", "noteSimu"].some((k) => c[k]) ? '<section class="blk"><h3>Notes prises pendant le rendez-vous</h3><div class="lnsum">' +
           [["noteMariage", "Mariage"], ["noteGouts", "Goûts et envies"], ["noteDegust", "Dégustation"], ["noteSimu", "Simulation"]].filter((x) => c[x[0]]).map((x) => '<div><b>' + x[1] + '</b><p>' + esc(c[x[0]]) + '</p></div>').join("") + '</div></section>' : "") +
         '<section class="blk"><h3>Notes internes</h3><textarea data-k="notes" placeholder="Menu, goûts, contraintes, à rappeler…">' + esc(c.notes) + '</textarea></section>' +
       '</div>';
+  }
+
+
+  // ---------- Génération : opportunité + devis Sellsy + brouillon Gmail ----------
+  // Articles Sellsy correspondant aux vins du catalogue (relevés le 07/11/2026). Prix forcés au catalogue A.
+  const ART = {"1": 16841390, "2": 14971721, "3": 14971715, "4": 14971704, "6": 18463151, "9": 14971723, "10": 14971707, "11": 16383441, "12": 14971806, "13": 16841466, "14": 17372661, "15": 17843534, "16": 18462927, "62": 16927121, "20": 18463078, "21": 14971731, "22": 14971834, "23": 17454703, "24": 14971792, "25": 18463542, "63": 18463530, "27": 14971822, "29": 18462852, "30": 15382183, "31": 18463179, "32": 18463181, "34": 15125101, "35": 14971752, "36": 18463193, "37": 18463198, "38": 14971749, "39": 18462975, "64": 16900324, "40": 17446789, "41": 17219950, "42": 14971746, "43": 14971791, "44": 14971776, "46": 18463254, "48": 14971743, "49": 14971753, "50": 14971754, "51": 18463382, "52": 18329401, "54": 18462947, "55": 18463174, "56": 18462836, "57": 18463317, "58": 18462974, "59": 17446768, "60": 16919963};
+  const FOURNIER = ["Le Clos du Tuilier", "Le Mas de Florette", "La Bastide des Barattes"];
+  const isoFr = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ""); return m ? m[3] + "/" + m[2] + "/" + m[1] : ""; };
+  const veille = (d) => { const t = new Date((d || "") + "T12:00:00"); if (isNaN(t)) return ""; t.setDate(t.getDate() - 1); return t.toISOString().slice(0, 10); };
+  const capf = (x) => { x = String(x || "").trim(); return x ? x.charAt(0).toUpperCase() + x.slice(1).toLowerCase() : ""; };
+  const auLieu = (l) => { l = String(l || "").trim(); if (!l) return ""; if (/^Le /.test(l)) return "au " + l.slice(3); if (/^Les /.test(l)) return "aux " + l.slice(4); if (/^La /.test(l)) return "à la " + l.slice(3); if (/^L['’]/.test(l)) return "à l'" + l.slice(2); return "à " + l; };
+  const verres = (raw) => { const s = String(raw == null ? "" : raw).trim(); if (/b/i.test(s)) return "forfait de " + (pnum(s) || 6) + " bouteilles"; const v = pnum(s); return isFinite(v) ? s.replace(".", ",") + (v >= 2 ? " verres" : " verre") + " par personne" : ""; };
+  function genBuild(c) {
+    const r = simuCalc(c), err = [], warn = [];
+    const prenoms = [c.p1, c.p2].filter(Boolean).join(" & ");
+    if (!c.p1) err.push("Prénom des mariés manquant (onglet Mariage)");
+    if (!c.date) err.push("Date du mariage manquante");
+    if (!c.lieu) err.push("Lieu de réception manquant");
+    if (!r.inv) err.push("Nombre d'invités manquant");
+    if (/OPP-\d+/.test(c.historique || "") || (c.devis || []).length) err.push("Ce couple a déjà une opportunité ou un devis dans Sellsy : à reprendre à la main pour éviter un doublon");
+    const lines = r.lines.filter((l) => l.q > 0);
+    if (!lines.length) err.push("Aucune bouteille dans la simulation (vins retenus ★ et moments à renseigner)");
+    lines.forEach((l) => { const m = META.get(l.w.ref); if (!m || !ART[m.n]) err.push("Vin hors catalogue Sellsy : " + l.w.ref); if (!isFinite(l.pu)) err.push("Prix manquant : " + l.w.ref); });
+    // Répartition de chaque vin par moment (au prorata de la simulation, total = quantité retenue)
+    const per = new Map();
+    r.rows.forEach((row) => row.ws.forEach((w) => { const a = per.get(w.ref) || []; a.push({ mk: row.mk, ml: row.ml, part: row.btl / row.ws.length, raw: row.raw, forfait: row.forfait, shared: row.ws.length > 1 ? row.ws.filter((x) => x.ref !== w.ref).map((x) => splitRef(x.ref)[1]) : [] }); per.set(w.ref, a); }));
+    const alloc = new Map();
+    lines.forEach((l) => {
+      const parts = (per.get(l.w.ref) || []).filter((p) => p.part > 0), tot = parts.reduce((s, p) => s + p.part, 0);
+      if (!parts.length || !tot) { alloc.set(l.w.ref, [{ mk: "_", ml: "Sélection", q: l.q, raw: "", shared: [] }]); return; }
+      const u = l.q % 6 === 0 ? 6 : 1, n = l.q / u; // répartition par cartons de 6 quand c'est possible
+      const base = parts.map((p) => Object.assign({}, p, { exact: n * p.part / tot })); base.forEach((p) => (p.q = Math.floor(p.exact)));
+      let rest = n - base.reduce((s, p) => s + p.q, 0);
+      base.slice().sort((a, b) => (b.exact - b.q) - (a.exact - a.q)).forEach((p) => { if (rest > 0) { p.q++; rest--; } });
+      base.forEach((p) => (p.q *= u));
+      alloc.set(l.w.ref, base.filter((p) => p.q > 0));
+    });
+    // Lignes du devis : un titre par moment, dans l'ordre du déroulé
+    const lignes = [], order = MOM(c).map((m) => m[0]).concat(["_"]);
+    order.forEach((mk) => {
+      const items = lines.map((l) => ({ l, a: (alloc.get(l.w.ref) || []).find((p) => p.mk === mk) })).filter((x) => x.a);
+      if (!items.length) return;
+      if (lignes.length) lignes.push({ saut_de_ligne: true });
+      lignes.push({ titre: capf(items[0].a.ml) });
+      items.forEach((x) => { const m = META.get(x.l.w.ref); lignes.push({ article_id: ART[m.n], quantite: x.a.q, prix_unitaire: x.l.pu, _ref: x.l.w.ref }); });
+    });
+    const liv = isFinite(r.liv) && r.liv > 0 ? r.liv : 0;
+    if (!liv) warn.push("Livraison non chiffrée pour ce lieu : à ajouter dans le devis");
+    if (!c.email) warn.push("Pas d'e-mail des mariés : le brouillon sera adressé à contact@, à remplacer");
+    if (c.spirit && c.spirit !== "Non") warn.push("Spiritueux demandés : non chiffrés dans ce devis, joindre le catalogue spiritueux au mail");
+    warn.push("Date de livraison mise à la veille du mariage (" + isoFr(veille(c.date)) + ") : à confirmer");
+    if (!FOURNIER.includes(c.lieu)) warn.push("Mode de livraison à renseigner dans Sellsy");
+    const totalVins = lignes.filter((x) => x.article_id).reduce((s, x) => s + x.quantite * x.prix_unitaire, 0);
+    // Mail récap (règles mails Pépites de Vin : récap après dégustation)
+    const signe = c.recu || "Thomas", bonjour = "Bonjour " + ([c.p1, c.p2].filter(Boolean).join(" et ") || "") + ",";
+    const RUB = [["bulles", "Bulles"], ["rose", "Rosés"], ["blanc", "Blancs"], ["rouge", "Rouges"]];
+    let h = "<p>" + esc(bonjour) + "</p><p>Merci encore pour votre passage sur notre stand aux Wedding Shop Days, ce fut un plaisir de vous faire déguster nos vins.</p>" +
+      "<p>Voici la sélection pour votre mariage" + (c.lieu ? " " + esc(auLieu(c.lieu)) : "") + ". Les quantités sont basées sur <b>" + r.inv + " personnes</b>, avec des ratios pour des buveurs « normaux ».</p>";
+    let t = bonjour + "\n\nMerci encore pour votre passage sur notre stand aux Wedding Shop Days, ce fut un plaisir de vous faire déguster nos vins.\n\nVoici la sélection pour votre mariage" + (c.lieu ? " " + auLieu(c.lieu) : "") + ". Les quantités sont basées sur " + r.inv + " personnes, avec des ratios pour des buveurs « normaux ».\n";
+    RUB.forEach(([ck, lab]) => {
+      const ls = lines.filter((l) => l.w.col === ck); if (!ls.length) return;
+      h += "<p><b>" + lab + "</b></p><ul>"; t += "\n" + lab + "\n";
+      ls.forEach((l) => {
+        const sr = splitRef(l.w.ref), px = fmtE(l.pu);
+        h += "<li><b>" + esc(sr[0]) + " – " + esc(sr[1]) + " – " + px + "</b><ul>"; t += "• " + sr[0] + " – " + sr[1] + " – " + px + "\n";
+        (alloc.get(l.w.ref) || []).forEach((a) => {
+          const v = verres(a.raw), sh = a.shared.length ? ", à partager avec " + a.shared.join(" et ") : "";
+          const txt = a.forfait ? a.ml + " : forfait de " + a.q + " bouteilles à la demande" + sh : a.ml + (v ? " : " + v + sh : "") + " → " + a.q + " bouteilles";
+          h += "<li>" + esc(txt) + "</li>"; t += "   – " + txt + "\n";
+        });
+        h += "<li><b>Total : " + l.q + " bouteilles</b>, soit " + (l.q / 6) + " carton" + (l.q / 6 > 1 ? "s" : "") + " de 6</li></ul></li>"; t += "   – Total : " + l.q + " bouteilles\n";
+      });
+      h += "</ul>";
+    });
+    h += '<p>Vous trouverez le devis correspondant ici : <a href="{{LIEN_DEVIS}}">devis {{NUM_DEVIS}}</a>.</p><p>Si vos invités sont plutôt grands amateurs, ou si vous souhaitez ajuster une référence ou les quantités, je reste à votre disposition.</p><p>À très vite,<br>' + esc(signe) + "</p>";
+    t += "\nVous trouverez le devis correspondant ici : {{LIEN_DEVIS}} (devis {{NUM_DEVIS}}).\n\nSi vos invités sont plutôt grands amateurs, ou si vous souhaitez ajuster une référence ou les quantités, je reste à votre disposition.\n\nÀ très vite,\n" + signe;
+    const brief = "Couple rencontré au salon Wedding Shop Days (Clos du Tuilier, novembre 2026)" + (c.rdvJour ? ", rendez-vous du " + isoFr(c.rdvJour) + (c.rdv ? " à " + c.rdv : "") : "") + (c.recu ? ", reçu par " + c.recu : "") + (c.degustePar ? ", dégustation faite par " + c.degustePar : "") + ". " +
+      "Mariage le " + isoFr(c.date) + " à " + (c.lieu || "?") + ", " + r.inv + " invités." + (c.interet ? " Intérêt : " + (INTERETS.find((x) => x[0] === c.interet) || [, c.interet])[1] + "." : "") +
+      " Sélection retenue : " + lines.map((l) => splitRef(l.w.ref).join(" ") + " (" + l.q + " btl)").join(", ") + ". Devis et mail récap préparés depuis le carnet le " + new Date().toLocaleDateString("fr-FR") + "." + (c.action ? " Prochaine action : " + c.action + "." : "");
+    const P = {
+      par: signe,
+      opp: Object.assign({ prenoms, prenom: c.p1 || "", nom: (c.n1 || "").toUpperCase(), date_mariage: isoFr(c.date), lieu: c.lieu || "", collaborateur: "thomas", source: "Interne", origine: "HSE", depart: "Marseille", note: brief }, c.email ? { email: c.email } : {}, r.inv ? { invites: r.inv } : {}),
+      devis: { sujet: "Mariage " + prenoms + " - " + isoFr(c.date), lignes: lignes.map((x) => { const y = Object.assign({}, x); delete y._ref; return y; }) },
+      livraison: liv,
+      note: "Livraison " + (c.lieu || "") + "<br />Mariage " + prenoms + " - " + isoFr(c.date) + "<br />",
+      champs: [{ id: 240663, value: 3936701 }, { id: 246877, value: 3945222 }, { id: 246910, value: c.lieu || "" }, { id: 246912, value: c.date }, { id: 246911, value: veille(c.date) }, { id: 246913, value: 3945265 }, { id: 246915, value: "Salon Wedding Shop Days 2026 (HSE)" }]
+        .concat(FOURNIER.includes(c.lieu) ? [{ id: 246914, value: 3945268 }] : []).filter((x) => x.value !== "" && x.value != null),
+      mail: { a: c.email || "", objet: "Votre sélection de vins – Mariage " + prenoms + " – " + isoFr(c.date), html: h, corps: t },
+      alertes: warn.filter((x) => !/Pas d'e-mail/.test(x))
+    };
+    return { P, err, warn, lignes, liv, totalVins, total: totalVins + liv, prenoms, mailHtml: h };
+  }
+  function genSection(c) {
+    const g = c.gen || {};
+    let h = '<section class="blk genb"><h3>Devis, mail et opportunité <small>Sellsy et Gmail · rien n\'est envoyé au couple</small></h3>';
+    if (g.statut === "fait") {
+      h += '<div class="gok"><div><b>Opportunité</b> ' + esc(g.oppNum || "créée") + '</div>' +
+        '<div><b>Devis</b> ' + (g.lien ? '<a href="' + esc(g.lien) + '" target="_blank" rel="noopener">' + esc(g.devisNum || "voir") + ' ↗</a>' : esc(g.devisNum || "créé")) + (g.montant ? ' · ' + esc(String(g.montant)) : "") + '</div>' +
+        '<div><b>Mail</b> brouillon dans contact@ · <a href="https://mail.google.com/mail/u/?authuser=contact@pepitesdevin.com#drafts" target="_blank" rel="noopener">ouvrir les brouillons ↗</a></div>' +
+        '<div class="hint">Préparé le ' + new Date(g.fin || g.debut).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + (g.par ? " · " + esc(g.par) : "") + '</div></div>' +
+        ((g.alertes || []).length ? '<ul class="galt">' + g.alertes.map((a) => '<li>' + esc(a) + '</li>').join("") + '</ul>' : "");
+    } else if (g.statut === "en cours" && Date.now() - (g.debut || 0) < 3 * 60 * 1000) {
+      h += '<p class="hint">Génération en cours…</p>';
+    } else {
+      if (g.statut === "erreur") h += '<p class="warnl">La génération s\'est arrêtée : ' + esc(g.erreur || "") + (g.oppNum || g.devisNum ? '<br>Déjà créé : ' + esc([g.oppNum, g.devisNum].filter(Boolean).join(" · ")) + ' (repris sans doublon)' : "") + '</p>';
+      h += '<p class="hint" style="margin:0 0 10px">À partir des vins retenus et de la simulation : opportunité dans Sellsy, devis TTC par moment avec la livraison, et mail récap en brouillon dans contact@.</p>' +
+        '<button type="button" class="primary" data-gen="open">' + (g.statut === "erreur" ? "Reprendre la génération" : "Préparer le mail, l'opportunité et le devis") + '</button>';
+    }
+    return h + '</section>';
+  }
+  function openGen() {
+    flush();
+    const c = current, b = genBuild(c);
+    let ov = $("genov");
+    if (!ov) { document.body.insertAdjacentHTML("beforeend", '<div class="ov" id="genov" hidden><div class="ovbar"><strong>Mail, opportunité et devis</strong><button type="button" id="genX">Fermer ✕</button></div><div class="ovbox genbox" id="genB"></div></div>'); ov = $("genov");
+      $("genX").addEventListener("click", () => { ov.hidden = true; });
+      $("genB").addEventListener("click", (e) => { if (e.target.closest("#genGo")) runGen(); });
+    }
+    let h = '<div class="gpad">';
+    if (b.err.length) h += '<div class="gerr"><b>À compléter avant de générer</b><ul>' + b.err.map((x) => '<li>' + esc(x) + '</li>').join("") + '</ul></div>';
+    if (b.warn.length) h += '<div class="gwarn"><b>Points d\'attention</b><ul>' + b.warn.map((x) => '<li>' + esc(x) + '</li>').join("") + '</ul></div>';
+    h += '<h4>Opportunité Sellsy</h4><p>Mariage ' + esc(b.prenoms) + ' - ' + esc(isoFr(c.date)) + ' - ' + esc(c.lieu || "") + '<br><span class="hint">Pipeline Prospection ' + esc((c.date || "").slice(0, 4)) + ', étape 1 · origine HSE (salon WSD) · Thomas · brief dans l\'activité</span></p>';
+    h += '<h4>Devis (tarif TTC, statut envoyé)</h4><table class="gtab"><thead><tr><th>Ligne</th><th>Qté</th><th>PU TTC</th><th>Total</th></tr></thead><tbody>';
+    b.lignes.forEach((x) => {
+      if (x.saut_de_ligne) return;
+      if (x.titre) { h += '<tr class="gt"><td colspan="4">' + esc(x.titre) + '</td></tr>'; return; }
+      const sr = splitRef(x._ref); h += '<tr><td>' + esc(sr[0] + " – " + sr[1]) + '</td><td>' + x.quantite + '</td><td>' + fmtE(x.prix_unitaire) + '</td><td>' + fmtE(x.quantite * x.prix_unitaire) + '</td></tr>';
+    });
+    if (b.liv) h += '<tr class="gt"><td colspan="4">Livraison</td></tr><tr><td>Livraison ' + esc(c.lieu) + '</td><td>1</td><td>' + fmtE(b.liv) + '</td><td>' + fmtE(b.liv) + '</td></tr>';
+    h += '</tbody><tfoot><tr><td colspan="3">Total TTC</td><td>' + fmtE(b.total) + '</td></tr></tfoot></table>';
+    h += '<h4>Mail en brouillon (contact@)</h4><p class="hint">À : ' + esc(c.email || "— (à compléter)") + ' · Objet : ' + esc(b.P.mail.objet) + '</p><div class="gmail">' + b.mailHtml.split("{{LIEN_DEVIS}}").join("#").split("{{NUM_DEVIS}}").join("(numéro du devis)") + '</div>';
+    h += '<div class="gact">' + (b.err.length ? '<button type="button" class="primary" disabled>Compléter la fiche d\'abord</button>' : '<button type="button" class="primary" id="genGo">Créer dans Sellsy et préparer le brouillon</button>') +
+      '<span class="hint">Le devis ne pourra pas être supprimé automatiquement ensuite. Rien n\'est envoyé au couple.</span></div></div>';
+    $("genB").innerHTML = h; ov.hidden = false; $("genB").scrollTop = 0;
+    ov._build = b; ov._id = c.id;
+  }
+  let genBusy = false;
+  async function runGen() {
+    const ov = $("genov"), b = ov._build, id = ov._id; if (genBusy || !b || !id) return; genBusy = true;
+    const go = $("genGo"); if (go) { go.disabled = true; go.textContent = "Création en cours… (20 à 40 s)"; }
+    try {
+      await flush(); await pushPending();
+      const r = await fetch(API + KEY + "/generer/" + encodeURIComponent(id), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b.P), cache: "no-store" }).then((x) => x.json());
+      const c = couples.find((x) => x.id === id); if (c && r.gen) c.gen = r.gen;
+      if (current && current.id === id && r.gen) { current.gen = r.gen; if (r.gen.fin) current.updatedAt = Math.max(current.updatedAt || 0, r.gen.fin); }
+      ov.hidden = true;
+      toast(r.ok ? "Opportunité, devis et brouillon créés" : r.erreur === "collection inconnue" ? "Serveur pas encore mis à jour : rien n'a été créé" : "Arrêt : " + (r.erreur || "erreur"));
+      if (current && current.id === id) renderFiche();
+      pull();
+    } catch (e) { toast("Serveur injoignable : rien n'a été créé"); if (go) { go.disabled = false; go.textContent = "Réessayer"; } }
+    finally { genBusy = false; }
   }
 
   let catalCat = "", catalReg = "", catalQ = "";
@@ -1148,6 +1319,7 @@ body.ovopen { overflow: hidden; }
       renderFiche(); window.scrollTo(0, 0); return;
     }
     if (b.dataset.fiche) { openFiche(b.dataset.fiche, b.dataset.fname); return; }
+    if (b.dataset.gen === "open") { openGen(); return; }
     if (b.dataset.dpar) { current.degustePar = current.degustePar === b.dataset.dpar ? "" : b.dataset.dpar; markDirty(true); refreshItems(); return; }
     if (b.dataset.int) { current.interet = current.interet === b.dataset.int ? "" : b.dataset.int; markDirty(true); refreshItems(); updateBadges(); return; }
     if (b.id === "identDone") { editIdentity = false; flush(); renderFiche(); return; }
