@@ -1036,7 +1036,7 @@ body.ovopen { overflow: hidden; }
       h += "<p><b>" + lab + "</b></p><ul>"; t += "\n" + lab + "\n";
       ls.forEach((l) => {
         const sr = splitRef(l.w.ref), px = fmtE(l.pu);
-        const tv = (c.tasting || []).find((x) => x.ref === l.w.ref), cc = tv && tv.avis === "coeur" ? " (votre coup de cœur)" : "";
+        const cc = "";
         h += "<li><b>" + esc(sr[0]) + " – " + esc(sr[1]) + " – " + px + "</b>" + esc(cc) + "<ul>"; t += "• " + sr[0] + " – " + sr[1] + " – " + px + cc + "\n";
         (alloc.get(l.w.ref) || []).forEach((a) => {
           const v = verres(a.raw), sh = a.shared.length ? ", à partager avec " + a.shared.join(" et ") : "";
