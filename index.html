@@ -364,6 +364,10 @@ button.stat span { text-decoration: underline; text-decoration-color: rgba(250, 
 .gtab tfoot td { font-weight: 700; border-bottom: 0; }
 .gmail { border: 1px solid #ece4d6; border-radius: 10px; padding: 12px 16px; font-size: 14.5px; line-height: 1.45; background: #fffdf9; }
 .gmail ul { padding-left: 20px; margin: 4px 0; }
+.gnotes { background: #f4f8ee; border: 1px solid #cfdcbf; border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.gnotes ul { margin: 6px 0 0; padding-left: 18px; }
+#genMail { outline: none; } #genMail:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(24,51,0,.12); }
+.gmail .ph { background: #fff1c9; border-radius: 4px; padding: 0 4px; }
 .gact { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
 /* v3 : rendez-vous, suivi, estimation, bilan, mode couple, fiche */
 button.fiche { border: 0; cursor: pointer; line-height: 1.3; }
@@ -1025,14 +1029,15 @@ body.ovopen { overflow: hidden; }
     const signe = c.recu || "Thomas", bonjour = "Bonjour " + ([c.p1, c.p2].filter(Boolean).join(" et ") || "") + ",";
     const RUB = [["bulles", "Bulles"], ["rose", "Rosés"], ["blanc", "Blancs"], ["rouge", "Rouges"]];
     let h = "<p>" + esc(bonjour) + "</p><p>Merci encore pour votre passage sur notre stand aux Wedding Shop Days, ce fut un plaisir de vous faire déguster nos vins.</p>" +
-      "<p>Voici la sélection pour votre mariage" + (c.lieu ? " " + esc(auLieu(c.lieu)) : "") + ". Les quantités sont basées sur <b>" + r.inv + " personnes</b>, avec des ratios pour des buveurs « normaux ».</p>";
-    let t = bonjour + "\n\nMerci encore pour votre passage sur notre stand aux Wedding Shop Days, ce fut un plaisir de vous faire déguster nos vins.\n\nVoici la sélection pour votre mariage" + (c.lieu ? " " + auLieu(c.lieu) : "") + ". Les quantités sont basées sur " + r.inv + " personnes, avec des ratios pour des buveurs « normaux ».\n";
+      "<p>Voici la sélection pour votre mariage" + (c.lieu ? " " + esc(auLieu(c.lieu)) : "") + ". Les quantités sont basées sur <b>" + r.inv + " personnes</b>.</p>";
+    let t = bonjour + "\n\nMerci encore pour votre passage sur notre stand aux Wedding Shop Days, ce fut un plaisir de vous faire déguster nos vins.\n\nVoici la sélection pour votre mariage" + (c.lieu ? " " + auLieu(c.lieu) : "") + ". Les quantités sont basées sur " + r.inv + " personnes.\n";
     RUB.forEach(([ck, lab]) => {
       const ls = lines.filter((l) => l.w.col === ck); if (!ls.length) return;
       h += "<p><b>" + lab + "</b></p><ul>"; t += "\n" + lab + "\n";
       ls.forEach((l) => {
         const sr = splitRef(l.w.ref), px = fmtE(l.pu);
-        h += "<li><b>" + esc(sr[0]) + " – " + esc(sr[1]) + " – " + px + "</b><ul>"; t += "• " + sr[0] + " – " + sr[1] + " – " + px + "\n";
+        const tv = (c.tasting || []).find((x) => x.ref === l.w.ref), cc = tv && tv.avis === "coeur" ? " (votre coup de cœur)" : "";
+        h += "<li><b>" + esc(sr[0]) + " – " + esc(sr[1]) + " – " + px + "</b>" + esc(cc) + "<ul>"; t += "• " + sr[0] + " – " + sr[1] + " – " + px + cc + "\n";
         (alloc.get(l.w.ref) || []).forEach((a) => {
           const v = verres(a.raw), sh = a.shared.length ? ", à partager avec " + a.shared.join(" et ") : "";
           const txt = a.forfait ? a.ml + " : forfait de " + a.q + " bouteilles à la demande" + sh : a.ml + (v ? " : " + v + sh : "") + " → " + a.q + " bouteilles";
@@ -1042,8 +1047,8 @@ body.ovopen { overflow: hidden; }
       });
       h += "</ul>";
     });
-    h += '<p>Vous trouverez le devis correspondant ici : <a href="{{LIEN_DEVIS}}">devis {{NUM_DEVIS}}</a>.</p><p>Si vos invités sont plutôt grands amateurs, ou si vous souhaitez ajuster une référence ou les quantités, je reste à votre disposition.</p><p>À très vite,<br>' + esc(signe) + "</p>";
-    t += "\nVous trouverez le devis correspondant ici : {{LIEN_DEVIS}} (devis {{NUM_DEVIS}}).\n\nSi vos invités sont plutôt grands amateurs, ou si vous souhaitez ajuster une référence ou les quantités, je reste à votre disposition.\n\nÀ très vite,\n" + signe;
+    h += '<p>Vous trouverez le devis correspondant ici : <a href="{{LIEN_DEVIS}}">devis {{NUM_DEVIS}}</a>.</p><p>Ces quantités correspondent à une consommation moyenne : si vos invités apprécient particulièrement le vin, nous les reverrons à la hausse. Je reste bien sûr à votre disposition pour ajuster une référence ou les quantités.</p><p>À très vite,<br>' + esc(signe) + "</p>";
+    t += "\nVous trouverez le devis correspondant ici : {{LIEN_DEVIS}} (devis {{NUM_DEVIS}}).\n\nCes quantités correspondent à une consommation moyenne : si vos invités apprécient particulièrement le vin, nous les reverrons à la hausse. Je reste bien sûr à votre disposition pour ajuster une référence ou les quantités.\n\nÀ très vite,\n" + signe;
     const brief = "Couple rencontré au salon Wedding Shop Days (Clos du Tuilier, novembre 2026)" + (c.rdvJour ? ", rendez-vous du " + isoFr(c.rdvJour) + (c.rdv ? " à " + c.rdv : "") : "") + (c.recu ? ", reçu par " + c.recu : "") + (c.degustePar ? ", dégustation faite par " + c.degustePar : "") + ". " +
       "Mariage le " + isoFr(c.date) + " à " + (c.lieu || "?") + ", " + r.inv + " invités." + (c.interet ? " Intérêt : " + (INTERETS.find((x) => x[0] === c.interet) || [, c.interet])[1] + "." : "") +
       " Sélection retenue : " + lines.map((l) => splitRef(l.w.ref).join(" ") + " (" + l.q + " btl)").join(", ") + ". Devis et mail récap préparés depuis le carnet le " + new Date().toLocaleDateString("fr-FR") + "." + (c.action ? " Prochaine action : " + c.action + "." : "");
@@ -1098,7 +1103,11 @@ body.ovopen { overflow: hidden; }
     });
     if (b.liv) h += '<tr class="gt"><td colspan="4">Livraison</td></tr><tr><td>Livraison ' + esc(c.lieu) + '</td><td>1</td><td>' + fmtE(b.liv) + '</td><td>' + fmtE(b.liv) + '</td></tr>';
     h += '</tbody><tfoot><tr><td colspan="3">Total TTC</td><td>' + fmtE(b.total) + '</td></tr></tfoot></table>';
-    h += '<h4>Mail en brouillon (contact@)</h4><p class="hint">À : ' + esc(c.email || "— (à compléter)") + ' · Objet : ' + esc(b.P.mail.objet) + '</p><div class="gmail">' + b.mailHtml.split("{{LIEN_DEVIS}}").join("#").split("{{NUM_DEVIS}}").join("(numéro du devis)") + '</div>';
+    const notes = [["Notes générales", c.notes], ["Mariage", c.noteMariage], ["Goûts et envies", c.noteGouts], ["Dégustation", c.noteDegust], ["Simulation", c.noteSimu]].filter((x) => String(x[1] || "").trim())
+      .concat((c.tasting || []).filter((x) => String(x.note || "").trim()).map((x) => [splitRef(x.ref)[1] + (x.avis === "coeur" ? " ♥" : ""), x.note]));
+    h += '<h4>Mail en brouillon (contact@)</h4><p class="hint">À : ' + esc(c.email || "— (à compléter)") + ' · Objet : ' + esc(b.P.mail.objet) + '</p>';
+    if (notes.length) h += '<div class="gnotes"><b>Notes prises pendant le salon</b> <span class="hint">— à reprendre dans le mail si utile (elles n\'y sont pas recopiées telles quelles)</span><ul>' + notes.map((x) => '<li><b>' + esc(x[0]) + ' :</b> ' + esc(x[1]) + '</li>').join("") + '</ul></div>';
+    h += '<p class="hint" style="margin:0">Le texte du mail est modifiable ci-dessous avant la création.</p><div class="gmail" id="genMail" contenteditable="true" spellcheck="true">' + b.mailHtml.split("{{NUM_DEVIS}}").join('<span class="ph" contenteditable="false">numéro du devis</span>') + '</div>';
     h += '<div class="gact">' + (b.err.length ? '<button type="button" class="primary" disabled>Compléter la fiche d\'abord</button>' : '<button type="button" class="primary" id="genGo">Créer dans Sellsy et préparer le brouillon</button>') +
       '<span class="hint">Le devis ne pourra pas être supprimé automatiquement ensuite. Rien n\'est envoyé au couple.</span></div></div>';
     $("genB").innerHTML = h; ov.hidden = false; $("genB").scrollTop = 0;
@@ -1107,6 +1116,21 @@ body.ovopen { overflow: hidden; }
   let genBusy = false;
   async function runGen() {
     const ov = $("genov"), b = ov._build, id = ov._id; if (genBusy || !b || !id) return; genBusy = true;
+    const ed = $("genMail");
+    if (ed) {
+      const cl = ed.cloneNode(true); cl.querySelectorAll(".ph").forEach((x) => x.replaceWith("{{NUM_DEVIS}}"));
+      b.P.mail.html = cl.innerHTML.split("%7B%7BLIEN_DEVIS%7D%7D").join("{{LIEN_DEVIS}}");
+      const txt = (n, d) => [...n.childNodes].map((x) => {
+        if (x.nodeType === 3) return x.textContent;
+        const tg = x.tagName;
+        if (tg === "BR") return "\n";
+        if (tg === "A") return x.textContent + " : {{LIEN_DEVIS}}";
+        if (tg === "UL" || tg === "OL") return "\n" + [...x.children].map((li) => (d ? "   – " : "• ") + txt(li, d + 1).trim()).join("\n") + "\n";
+        if (tg === "P" || tg === "DIV") return txt(x, d).trim() + "\n\n";
+        return txt(x, d);
+      }).join("");
+      b.P.mail.corps = txt(cl, 0).replace(/\n{3,}/g, "\n\n").trim();
+    }
     const go = $("genGo"); if (go) { go.disabled = true; go.textContent = "Création en cours… (20 à 40 s)"; }
     try {
       await flush(); await pushPending();
