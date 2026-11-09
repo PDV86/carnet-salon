@@ -1078,12 +1078,19 @@ body.ovopen { overflow: hidden; }
           h += "<li>" + esc(s).replace(esc(titre), "<b>" + esc(titre) + "</b>") + "</li>"; t += "• " + s + "\n"; return;
         }
         vu.add(l.w.ref);
-        const f = FD[(META.get(l.w.ref) || {}).n] || ["", []], desc = f[0], acc = accordDe(l, mk, desc);
+        const f = FD[(META.get(l.w.ref) || {}).n] || ["", []], desc = f[0], acc = "";
         h += "<li><b>" + esc(titre) + "</b> - " + px + " la bouteille<br>" + esc([desc, acc].filter(Boolean).join(" ")) + "<br><i>Quantité prévue : " + esc(qte(a)) + "</i></li>";
         t += "• " + titre + " - " + px + " la bouteille\n  " + [desc, acc].filter(Boolean).join(" ") + "\n  Quantité prévue : " + qte(a) + "\n";
       });
       h += "</ul>";
     });
+    const autres = (c.tasting || []).filter((x) => (x.avis === "coeur" || x.avis === "aime") && META.get(x.ref) && !lines.some((l) => l.w.ref === x.ref));
+    if (autres.length) {
+      const nm = (x) => { const w = META.get(x.ref); return w.dom + " - " + w.cuv + (w.prix && w.prix[0] ? " (" + w.prix[0] + " €)" : ""); };
+      const deb = "Lors de la dégustation, vous avez aussi apprécié ", fin = " : nous pouvons tout à fait " + (autres.length > 1 ? "les" : "l'") + " intégrer à la sélection si vous le souhaitez.";
+      const lst2 = (a) => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " et " + a[a.length - 1];
+      h += "<p>" + esc(deb) + lst2(autres.map((x) => "<b>" + esc(nm(x)) + "</b>")) + esc(fin) + "</p>"; t += "\n" + deb + lst2(autres.map(nm)) + fin + "\n";
+    }
     const tr = c.traiteur ? " (" + c.traiteur + ")" : "";
     const pAcc = "Ces accords sont une première base : dès que vous aurez le menu de votre traiteur" + tr + ", n'hésitez pas à nous le transmettre, nous affinerons les accords plat par plat et ajusterons la sélection si besoin.";
     h += "<p>" + esc(pAcc) + "</p><p><b>En résumé</b></p><ul>"; t += "\n" + pAcc + "\n\nEN RÉSUMÉ\n";
