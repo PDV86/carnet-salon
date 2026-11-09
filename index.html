@@ -439,6 +439,16 @@ body.ovopen { overflow: hidden; }
   .tabs { gap: 0; }
   .main { padding: 14px 12px; }
 }
+.gchat { border-top: 1px solid #ece4d6; margin-top: 14px; padding-top: 10px; display: grid; gap: 8px; }
+.gchat h4 { margin: 0; }
+.gmsgs { display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
+.gmsgs:empty { display: none; }
+.gm { padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; max-width: 85%; white-space: pre-wrap; }
+.gm.me { justify-self: end; background: var(--brand); color: #fff; }
+.gm.cl { justify-self: start; background: #f4f1ea; border: 1px solid #ece4d6; }
+.gm.wait { color: #7a7266; font-style: italic; }
+.gin { display: flex; gap: 8px; align-items: flex-end; }
+.gin textarea { flex: 1; min-width: 0; border: 1px solid #d9cfbf; border-radius: 10px; padding: 8px 10px; font: inherit; resize: vertical; }
 </style>
 
 <header class="top"><div class="in">
@@ -1021,7 +1031,7 @@ body.ovopen { overflow: hidden; }
     });
     const liv = isFinite(r.liv) && r.liv > 0 ? r.liv : 0;
     if (!liv) warn.push("Livraison non chiffrée pour ce lieu : à ajouter dans le devis");
-    if (!c.email) warn.push("Pas d'e-mail des mariés : le brouillon sera adressé à contact@, à remplacer");
+    if (!c.email) err.push("E-mail des mariés manquant (onglet Mariage) : il faut pour créer la fiche Sellsy");
     if (c.spirit && c.spirit !== "Non") warn.push("Spiritueux demandés : non chiffrés dans ce devis, joindre le catalogue spiritueux au mail");
     warn.push("Date de livraison mise à la veille du mariage (" + isoFr(veille(c.date)) + ") : à confirmer");
     if (!FOURNIER.includes(c.lieu)) warn.push("Mode de livraison à renseigner dans Sellsy");
@@ -1108,7 +1118,8 @@ body.ovopen { overflow: hidden; }
         '<div><b>Devis</b> ' + (g.lien ? '<a href="' + esc(g.lien) + '" target="_blank" rel="noopener">' + esc(g.devisNum || "voir") + ' ↗</a>' : esc(g.devisNum || "créé")) + (g.montant ? ' · ' + esc(String(g.montant)) : "") + '</div>' +
         '<div><b>Mail</b> brouillon dans contact@ · <a href="https://mail.google.com/mail/u/?authuser=contact@pepitesdevin.com#drafts" target="_blank" rel="noopener">ouvrir les brouillons ↗</a></div>' +
         '<div class="hint">Préparé le ' + new Date(g.fin || g.debut).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + (g.par ? " · " + esc(g.par) : "") + '</div></div>' +
-        ((g.alertes || []).length ? '<ul class="galt">' + g.alertes.map((a) => '<li>' + esc(a) + '</li>').join("") + '</ul>' : "");
+        ((g.alertes || []).length ? '<ul class="galt">' + g.alertes.map((a) => '<li>' + esc(a) + '</li>').join("") + '</ul>' : "") +
+        (g.draftId && g.draftId !== "ok" ? '<button type="button" class="ghost" data-gen="chat" style="margin-top:10px">Faire évoluer le brouillon avec Claude</button>' : "");
     } else if (g.statut === "en cours" && Date.now() - (g.debut || 0) < 3 * 60 * 1000) {
       h += '<p class="hint">Génération en cours…</p>';
     } else {
@@ -1118,23 +1129,79 @@ body.ovopen { overflow: hidden; }
     }
     return h + '</section>';
   }
-  function openGen() {
-    flush();
-    const c = current, b = genBuild(c);
+  function openGenShell() {
     let ov = $("genov");
     if (!ov) { document.body.insertAdjacentHTML("beforeend", '<div class="ov" id="genov" hidden><div class="ovbar"><strong>Mail, opportunité et devis</strong><button type="button" id="genX">Fermer ✕</button></div><div class="ovbox genbox" id="genB"></div></div>'); ov = $("genov");
       $("genX").addEventListener("click", () => { ov.hidden = true; });
-      $("genB").addEventListener("click", (e) => { if (e.target.closest("#genGo")) runGen(); });
+      $("genB").addEventListener("click", (e) => { if (e.target.closest("#genGo")) runGen(); if (e.target.closest("#genAsk")) askClaude(); });
+      $("genB").addEventListener("keydown", (e) => { if (e.target.id === "genQ" && e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); askClaude(); } });
     }
+    return ov;
+  }
+  // ---------- Discussion avec Claude pour faire évoluer le mail ----------
+  function genContexte(c, b) {
+    const r = simuCalc(c), L = [];
+    L.push("Couple : " + [c.p1, c.n1].filter(Boolean).join(" ") + " & " + [c.p2, c.n2].filter(Boolean).join(" ") + " · mariage le " + isoFr(c.date) + " · " + (c.lieu || "lieu ?") + " · " + (r.inv || c.invites || "?") + " invités" + (c.traiteur ? " · traiteur " + c.traiteur : "") + (c.planner ? " · planner " + c.planner : ""));
+    L.push("Moments prévus : " + MOM(c).filter((m) => (c.moments || {})[m[0]] && (c.moments[m[0]].s || "") !== "Non" && c.moments[m[0]].s).map((m) => m[1] + " (" + c.moments[m[0]].s + (c.moments[m[0]].inv ? ", " + c.moments[m[0]].inv + " pers." : "") + ")").join(", "));
+    const notes = [["Notes générales", c.notes], ["Mariage", c.noteMariage], ["Goûts et envies", c.noteGouts], ["Dégustation", c.noteDegust], ["Simulation", c.noteSimu]].filter((x) => String(x[1] || "").trim());
+    if (notes.length) L.push("Notes de l'équipe (internes, à ne pas recopier telles quelles) :\n" + notes.map((x) => "- " + x[0] + " : " + x[1]).join("\n"));
+    if ((c.tasting || []).length) L.push("Dégustation au stand :\n" + c.tasting.map((t) => "- " + t.ref.replace(" — ", " - ") + " : " + ({ coeur: "coup de cœur", aime: "aimé", moyen: "moyen", non: "pas aimé" }[t.avis] || "goûté") + (t.note ? " (" + t.note + ")" : "")).join("\n"));
+    if (b) L.push("Lignes du devis prévu :\n" + b.lignes.filter((x) => !x.saut_de_ligne).map((x) => x.titre ? "## " + x.titre : "- " + x._ref.replace(" — ", " - ") + " : " + x.quantite + " btl à " + fmtE(x.prix_unitaire)).join("\n"));
+    L.push("Catalogue 2027 (prix TTC à la bouteille, description et accords officiels) :\n" + WINES.map((w) => { const f = FD[w.n] || ["", []]; return "- " + w.dom + " - " + w.cuv + " · " + w.cat + " · " + (w.prix && w.prix[0] ? w.prix[0] + " €" : "prix ?") + (f[0] ? " · " + f[0] : "") + (f[1].length ? " · Accords : " + f[1].join(", ") : ""); }).join("\n"));
+    return L.join("\n\n").replace(/[–—]/g, "-");
+  }
+  const phOn = (h) => String(h || "").split("{{NUM_DEVIS}}").join('<span class="ph" contenteditable="false">numéro du devis</span>');
+  const phOff = (el) => { const cl = el.cloneNode(true); cl.querySelectorAll(".ph").forEach((x) => x.replaceWith("{{NUM_DEVIS}}")); return cl.innerHTML.split("%7B%7BLIEN_DEVIS%7D%7D").join("{{LIEN_DEVIS}}"); };
+  function chatHtml(mode) {
+    return '<div class="gchat"><h4>Faire évoluer le mail avec Claude</h4><p class="hint" style="margin:0">' + (mode === "brouillon" ? "Chaque retouche repart du brouillon actuel dans Gmail (vos modifications à la main comprises) et le met à jour. Rien n'est envoyé." : "Claude retouche le texte ci-dessus ; vous pouvez encore le modifier à la main avant la création.") + '</p>' +
+      '<div class="gmsgs" id="genMsgs"></div><div class="gin"><textarea id="genQ" rows="2" placeholder="Ex. : plus court, ajoute un mot sur le menu du traiteur, remplace le rouge par un vin plus léger…"></textarea><button type="button" class="primary" id="genAsk">Envoyer</button></div></div>';
+  }
+  function drawMsgs(ov) {
+    const box = $("genMsgs"); if (!box) return;
+    box.innerHTML = (ov._chat || []).map((m) => '<div class="gm ' + (m.role === "user" ? "me" : "cl") + '">' + esc(m.content) + '</div>').join("") + (ov._wait ? '<div class="gm cl wait">Claude rédige…</div>' : "");
+    box.scrollTop = box.scrollHeight;
+  }
+  async function askClaude() {
+    const ov = $("genov"), q = $("genQ"), txt = (q && q.value || "").trim(); if (!txt || ov._wait) return;
+    const c = couples.find((x) => x.id === ov._id) || current; if (!c) return;
+    ov._chat = (ov._chat || []).concat([{ role: "user", content: txt }]); q.value = ""; ov._wait = true; drawMsgs(ov);
+    const ed = $("genMail"), go = $("genAsk"); if (go) go.disabled = true;
+    try {
+      const body = { mode: ov._mode, messages: ov._chat, contexte: genContexte(c, ov._build), html: ed && ov._mode !== "brouillon" ? phOff(ed) : "" };
+      const r = await fetch(API + KEY + "/chat/" + encodeURIComponent(c.id), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.erreur || "erreur");
+      ov._chat.push({ role: "assistant", content: (r.message || "C'est fait.") + (r.applique ? " Brouillon Gmail mis à jour." : "") });
+      if (r.html && ed) { ed.innerHTML = phOn(r.html); }
+    } catch (e) {
+      ov._chat.pop(); if (q) q.value = txt;
+      toast(/clé API/.test(e.message) ? "Clé API Anthropic pas encore installée sur le serveur" : e.message === "Failed to fetch" ? "Serveur injoignable" : "Claude : " + e.message);
+    } finally { ov._wait = false; if (go) go.disabled = false; drawMsgs(ov); }
+  }
+  async function openChatDraft() {
+    flush();
+    const c = current; openGenShell();
+    const ov = $("genov"); ov._id = c.id; ov._mode = "brouillon"; ov._build = null; ov._chat = [];
+    $("genB").innerHTML = '<div class="gpad"><h4>Brouillon actuel dans contact@</h4><p class="hint" style="margin:0">À : ' + esc(c.email || "") + '</p><div class="gmail" id="genMail"><p class="hint">Lecture du brouillon dans Gmail…</p></div>' + chatHtml("brouillon") + '</div>';
+    ov.hidden = false; $("genB").scrollTop = 0;
+    try {
+      const r = await fetch(API + KEY + "/chat/" + encodeURIComponent(c.id), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "brouillon", messages: [] }), cache: "no-store" }).then((x) => x.json());
+      $("genMail").innerHTML = r.ok ? phOn(r.html) : '<p class="warnl">' + esc(r.erreur || "Brouillon illisible") + '</p>';
+    } catch (e) { $("genMail").innerHTML = '<p class="warnl">Serveur injoignable</p>'; }
+  }
+  function openGen() {
+    flush();
+    const c = current, b = genBuild(c);
+    const ov = openGenShell(); ov._mode = "apercu"; ov._chat = [];
     let h = '<div class="gpad">';
     if (b.err.length) h += '<div class="gerr"><b>À compléter avant de générer</b><ul>' + b.err.map((x) => '<li>' + esc(x) + '</li>').join("") + '</ul></div>';
     if (b.warn.length) h += '<div class="gwarn"><b>Points d\'attention</b><ul>' + b.warn.map((x) => '<li>' + esc(x) + '</li>').join("") + '</ul></div>';
-    h += '<h4>Opportunité Sellsy</h4><p>Mariage ' + esc(b.prenoms) + ' - ' + esc(isoFr(c.date)) + ' - ' + esc(c.lieu || "") + '<br><span class="hint">Pipeline Prospection ' + esc((c.date || "").slice(0, 4)) + ', étape 1 · origine HSE (salon WSD) · Thomas · brief dans l\'activité</span></p>';
+    h += '<h4>Opportunité Sellsy</h4><p>Mariage ' + esc(b.prenoms) + ' - ' + esc(isoFr(c.date)) + ' - ' + esc(c.lieu || "") + '<br><span class="hint">Pipeline Prospection ' + esc((c.date || "").slice(0, 4)) + ', étape 1 · origine HSE (salon WSD) · Thomas · brief dans l\'activité</span></p>' +
+      '<label class="f" style="max-width:320px">Civilité de ' + esc(c.p1 || "la personne de contact") + ' (fiche Sellsy)<select id="genCiv"><option value="">Choisir…</option><option value="Mme"' + (c.civ === "Mme" ? " selected" : "") + '>Madame</option><option value="M"' + (c.civ === "M" ? " selected" : "") + '>Monsieur</option></select></label>';
     h += '<h4>Devis (tarif TTC, statut envoyé)</h4><table class="gtab"><thead><tr><th>Ligne</th><th>Qté</th><th>PU TTC</th><th>Total</th></tr></thead><tbody>';
     b.lignes.forEach((x) => {
       if (x.saut_de_ligne) return;
       if (x.titre) { h += '<tr class="gt"><td colspan="4">' + esc(x.titre) + '</td></tr>'; return; }
-      const sr = splitRef(x._ref); h += '<tr><td>' + esc(sr[0] + " – " + sr[1]) + '</td><td>' + x.quantite + '</td><td>' + fmtE(x.prix_unitaire) + '</td><td>' + fmtE(x.quantite * x.prix_unitaire) + '</td></tr>';
+      const sr = splitRef(x._ref); h += '<tr><td>' + esc(sr[0] + " - " + sr[1]) + '</td><td>' + x.quantite + '</td><td>' + fmtE(x.prix_unitaire) + '</td><td>' + fmtE(x.quantite * x.prix_unitaire) + '</td></tr>';
     });
     if (b.liv) h += '<tr class="gt"><td colspan="4">Livraison</td></tr><tr><td>Livraison ' + esc(c.lieu) + '</td><td>1</td><td>' + fmtE(b.liv) + '</td><td>' + fmtE(b.liv) + '</td></tr>';
     h += '</tbody><tfoot><tr><td colspan="3">Total TTC</td><td>' + fmtE(b.total) + '</td></tr></tfoot></table>';
@@ -1142,7 +1209,7 @@ body.ovopen { overflow: hidden; }
       .concat((c.tasting || []).filter((x) => String(x.note || "").trim()).map((x) => [splitRef(x.ref)[1] + (x.avis === "coeur" ? " ♥" : ""), x.note]));
     h += '<h4>Mail en brouillon (contact@)</h4><p class="hint">À : ' + esc(c.email || "— (à compléter)") + ' · Objet : ' + esc(b.P.mail.objet) + '</p>';
     if (notes.length) h += '<div class="gnotes"><b>Notes prises pendant le salon</b> <span class="hint">— à reprendre dans le mail si utile (elles n\'y sont pas recopiées telles quelles)</span><ul>' + notes.map((x) => '<li><b>' + esc(x[0]) + ' :</b> ' + esc(x[1]) + '</li>').join("") + '</ul></div>';
-    h += '<p class="hint" style="margin:0">Le texte du mail est modifiable ci-dessous avant la création.</p><div class="gmail" id="genMail" contenteditable="true" spellcheck="true">' + b.mailHtml.split("{{NUM_DEVIS}}").join('<span class="ph" contenteditable="false">numéro du devis</span>') + '</div>';
+    h += '<p class="hint" style="margin:0">Le texte du mail est modifiable ci-dessous avant la création.</p><div class="gmail" id="genMail" contenteditable="true" spellcheck="true">' + phOn(b.mailHtml) + '</div>' + chatHtml("apercu");
     h += '<div class="gact">' + (b.err.length ? '<button type="button" class="primary" disabled>Compléter la fiche d\'abord</button>' : '<button type="button" class="primary" id="genGo">Créer dans Sellsy et préparer le brouillon</button>') +
       '<span class="hint">Le devis ne pourra pas être supprimé automatiquement ensuite. Rien n\'est envoyé au couple.</span></div></div>';
     $("genB").innerHTML = h; ov.hidden = false; $("genB").scrollTop = 0;
@@ -1150,7 +1217,10 @@ body.ovopen { overflow: hidden; }
   }
   let genBusy = false;
   async function runGen() {
-    const ov = $("genov"), b = ov._build, id = ov._id; if (genBusy || !b || !id) return; genBusy = true;
+    const ov = $("genov"), b = ov._build, id = ov._id; if (genBusy || !b || !id) return;
+    const civ = ($("genCiv") || {}).value || ""; if (!civ) { toast("Choisissez la civilité pour la fiche Sellsy"); $("genCiv") && $("genCiv").focus(); return; }
+    b.P.opp.civilite = civ; { const cc = couples.find((x) => x.id === id); if (cc && cc.civ !== civ) { cc.civ = civ; if (current && current.id === id) current.civ = civ; } }
+    genBusy = true;
     const ed = $("genMail");
     if (ed) {
       const cl = ed.cloneNode(true); cl.querySelectorAll(".ph").forEach((x) => x.replaceWith("{{NUM_DEVIS}}"));
@@ -1379,6 +1449,7 @@ body.ovopen { overflow: hidden; }
     }
     if (b.dataset.fiche) { openFiche(b.dataset.fiche, b.dataset.fname); return; }
     if (b.dataset.gen === "open") { openGen(); return; }
+    if (b.dataset.gen === "chat") { openChatDraft(); return; }
     if (b.dataset.dpar) { current.degustePar = current.degustePar === b.dataset.dpar ? "" : b.dataset.dpar; markDirty(true); refreshItems(); return; }
     if (b.dataset.int) { current.interet = current.interet === b.dataset.int ? "" : b.dataset.int; markDirty(true); refreshItems(); updateBadges(); return; }
     if (b.id === "identDone") { editIdentity = false; flush(); renderFiche(); return; }
