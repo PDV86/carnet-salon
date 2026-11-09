@@ -1119,7 +1119,7 @@ body.ovopen { overflow: hidden; }
         '<div><b>Mail</b> brouillon dans contact@ · <a href="https://mail.google.com/mail/u/?authuser=contact@pepitesdevin.com#drafts" target="_blank" rel="noopener">ouvrir les brouillons ↗</a></div>' +
         '<div class="hint">Préparé le ' + new Date(g.fin || g.debut).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + (g.par ? " · " + esc(g.par) : "") + '</div></div>' +
         ((g.alertes || []).length ? '<ul class="galt">' + g.alertes.map((a) => '<li>' + esc(a) + '</li>').join("") + '</ul>' : "") +
-        (g.draftId && g.draftId !== "ok" ? '<button type="button" class="ghost" data-gen="chat" style="margin-top:10px">Faire évoluer le brouillon avec Claude</button>' : "");
+        (g.draftId && g.draftId !== "ok" ? '<a class="btnlike" style="margin-top:10px;display:inline-block" href="https://claude.ai/artifact/PBwbmwhG4RY8bPQD2W1jzt#' + esc(g.draftId) + '" target="_blank" rel="noopener">Retoucher le brouillon avec Claude ↗</a>' : "");
     } else if (g.statut === "en cours" && Date.now() - (g.debut || 0) < 3 * 60 * 1000) {
       h += '<p class="hint">Génération en cours…</p>';
     } else {
@@ -1209,7 +1209,7 @@ body.ovopen { overflow: hidden; }
       .concat((c.tasting || []).filter((x) => String(x.note || "").trim()).map((x) => [splitRef(x.ref)[1] + (x.avis === "coeur" ? " ♥" : ""), x.note]));
     h += '<h4>Mail en brouillon (contact@)</h4><p class="hint">À : ' + esc(c.email || "— (à compléter)") + ' · Objet : ' + esc(b.P.mail.objet) + '</p>';
     if (notes.length) h += '<div class="gnotes"><b>Notes prises pendant le salon</b> <span class="hint">— à reprendre dans le mail si utile (elles n\'y sont pas recopiées telles quelles)</span><ul>' + notes.map((x) => '<li><b>' + esc(x[0]) + ' :</b> ' + esc(x[1]) + '</li>').join("") + '</ul></div>';
-    h += '<p class="hint" style="margin:0">Le texte du mail est modifiable ci-dessous avant la création.</p><div class="gmail" id="genMail" contenteditable="true" spellcheck="true">' + phOn(b.mailHtml) + '</div>' + chatHtml("apercu");
+    h += '<p class="hint" style="margin:0">Le texte du mail est modifiable ci-dessous avant la création.</p><div class="gmail" id="genMail" contenteditable="true" spellcheck="true">' + phOn(b.mailHtml) + '</div><p class="hint" style="margin:0">Une fois le brouillon créé, vous pourrez le retoucher avec Claude depuis l\'Atelier des mails.</p>';
     h += '<div class="gact">' + (b.err.length ? '<button type="button" class="primary" disabled>Compléter la fiche d\'abord</button>' : '<button type="button" class="primary" id="genGo">Créer dans Sellsy et préparer le brouillon</button>') +
       '<span class="hint">Le devis ne pourra pas être supprimé automatiquement ensuite. Rien n\'est envoyé au couple.</span></div></div>';
     $("genB").innerHTML = h; ov.hidden = false; $("genB").scrollTop = 0;
